@@ -587,5 +587,4 @@ const LandingPage3 = () => {
   );
 };
 
-export default LandingPage;
-        
+export default LandingPage3;
