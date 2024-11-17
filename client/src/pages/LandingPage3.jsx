@@ -1,167 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Users, MessageCircle, Award, Search, Github, BookOpen, ChevronRight, Star, Shield, Brain, ChevronLeft, Calendar } from 'lucide-react';
-import * as THREE from 'three';
-
-// Custom Wave class for Three.js animation
-class Wave {
-  constructor(color = 0x4f46e5) {
-    this.geometry = new THREE.PlaneGeometry(window.innerWidth * 2, window.innerHeight * 2, 128, 128);
-    this.material = new THREE.ShaderMaterial({
-      side: THREE.DoubleSide,
-      uniforms: {
-        uTime: { value: 0 },
-        uColor: { value: new THREE.Color(color) },
-      },
-      vertexShader: `
-        uniform float uTime;
-        varying vec2 vUv;
-        varying float vElevation;
-
-        void main() {
-          vUv = uv;
-          vec4 modelPosition = modelMatrix * vec4(position, 1.0);
-          
-          float elevation = sin(modelPosition.x * 0.3 + uTime) * 0.3
-            * sin(modelPosition.y * 0.2 + uTime) * 0.3;
-          
-          modelPosition.z = elevation;
-          vElevation = elevation;
-
-          gl_Position = projectionMatrix * viewMatrix * modelPosition;
-        }
-      `,
-      fragmentShader: `
-        uniform vec3 uColor;
-        varying float vElevation;
-
-        void main() {
-          float alpha = (vElevation + 0.3) * 0.5;
-          gl_FragColor = vec4(uColor, alpha * 0.4);
-        }
-      `,
-      transparent: true,
-    });
-
-    this.mesh = new THREE.Mesh(this.geometry, this.material);
-    this.mesh.rotation.x = -Math.PI * 0.5;
-    this.mesh.position.y = -8;
-    this.time = 0;
-  }
-
-  update() {
-    this.time += 0.005;
-    this.material.uniforms.uTime.value = this.time;
-  }
-}
-
-const BackgroundAnimation = () => {
-  const containerRef = useRef();
-  const sceneRef = useRef();
-  const cameraRef = useRef();
-  const rendererRef = useRef();
-  const waveRef = useRef();
-  const animationFrameRef = useRef();
-
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    // Scene setup
-    const scene = new THREE.Scene();
-    sceneRef.current = scene;
-
-    // Camera setup
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
-    camera.position.z = 15;
-    camera.position.y = 5;
-    camera.lookAt(0, 0, 0);
-    cameraRef.current = camera;
-
-    // Renderer setup
-    const renderer = new THREE.WebGLRenderer({ 
-      antialias: true,
-      alpha: true,
-      canvas: containerRef.current
-    });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    rendererRef.current = renderer;
-
-    // Create wave
-    const wave = new Wave();
-    scene.add(wave.mesh);
-    waveRef.current = wave;
-
-    // Add particles
-    const particlesGeometry = new THREE.BufferGeometry();
-    const count = 2000;
-    const positions = new Float32Array(count * 3);
-    const colors = new Float32Array(count * 3);
-
-    for(let i = 0; i < count * 3; i += 3) {
-      positions[i] = (Math.random() - 0.5) * 50;
-      positions[i + 1] = (Math.random() - 0.5) * 50;
-      positions[i + 2] = (Math.random() - 0.5) * 50;
-
-      colors[i] = 0.5 + Math.random() * 0.5;
-      colors[i + 1] = 0.5 + Math.random() * 0.5;
-      colors[i + 2] = 1;
-    }
-
-    particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-    const particlesMaterial = new THREE.PointsMaterial({
-      size: 0.05,
-      vertexColors: true,
-      transparent: true,
-      opacity: 0.6,
-      blending: THREE.AdditiveBlending
-    });
-
-    const particles = new THREE.Points(particlesGeometry, particlesMaterial);
-    scene.add(particles);
-
-    // Animation
-    const animate = () => {
-      animationFrameRef.current = requestAnimationFrame(animate);
-      
-      if (waveRef.current) {
-        waveRef.current.update();
-      }
-
-      particles.rotation.y += 0.0005;
-      particles.rotation.x += 0.0002;
-
-      renderer.render(scene, camera);
-    };
-
-    animate();
-
-    // Handle resize
-    const handleResize = () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    // Cleanup
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      cancelAnimationFrame(animationFrameRef.current);
-      scene.remove(wave.mesh);
-      scene.remove(particles);
-      particlesGeometry.dispose();
-      particlesMaterial.dispose();
-      wave.geometry.dispose();
-      wave.material.dispose();
-      renderer.dispose();
-    };
-  }, []);
-
-  return <canvas ref={containerRef} className="fixed inset-0 -z-10" />;
-};
+import BackgroundAnimation from '@/components/BackgroundAnimation';
+import AnimatedCounter from '@/components/AnimatedCounter';
 
 // Blog posts data
 const blogPosts = [
@@ -188,78 +28,22 @@ const blogPosts = [
   }
 ];
 
-// Animated counter component
-const AnimatedCounter = ({ value, duration = 2000 }) => {
-  const [count, setCount] = useState(0);
-  const countRef = useRef(0);
-  const [isVisible, setIsVisible] = useState(false);
-  const elementRef = useRef(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (elementRef.current) {
-      observer.observe(elementRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (!isVisible) return;
-
-    const endValue = parseInt(value.replace(/,/g, '').replace(/\+/g, ''));
-    const stepTime = Math.abs(Math.floor(duration / endValue));
-    let startTime;
-
-    const updateCount = (timestamp) => {
-      if (!startTime) startTime = timestamp;
-      const progress = timestamp - startTime;
-      const increment = Math.min(endValue, Math.floor((progress / duration) * endValue));
-
-      if (countRef.current !== increment) {
-        countRef.current = increment;
-        setCount(increment);
-      }
-
-      if (progress < duration) {
-        requestAnimationFrame(updateCount);
-      }
-    };
-
-    requestAnimationFrame(updateCount);
-  }, [value, duration, isVisible]);
-
-  return (
-    <span ref={elementRef}>
-      {count.toLocaleString()}+
-    </span>
-  );
-};
-
 const BlogCard = ({ post }) => (
-    <div className="bg-black/40 backdrop-blur-xl border border-gray-800 rounded-2xl p-6 hover:scale-105 transition-all duration-300">
-      <div className="flex items-center space-x-2 text-sm text-gray-400 mb-3">
-        <Calendar size={16} />
-        <span>{post.date}</span>
-        <span>•</span>
-        <span>{post.readTime}</span>
-      </div>
-      <h3 className="text-xl font-semibold mb-2 text-white hover:text-indigo-400 transition-colors">
-        {post.title}
-      </h3>
-      <p className="text-gray-400 mb-4">{post.excerpt}</p>
-      <span className="inline-block px-3 py-1 rounded-full text-sm bg-indigo-500/20 text-indigo-400">
-        {post.category}
-      </span>
+  <div className="bg-black/40 backdrop-blur-xl border border-gray-800 rounded-2xl p-6 hover:scale-105 transition-all duration-300">
+    <div className="flex items-center space-x-2 text-sm text-gray-400 mb-3">
+      <Calendar size={16} />
+      <span>{post.date}</span>
+      <span>•</span>
+      <span>{post.readTime}</span>
     </div>
+    <h3 className="text-xl font-semibold mb-2 text-white hover:text-indigo-400 transition-colors">
+      {post.title}
+    </h3>
+    <p className="text-gray-400 mb-4">{post.excerpt}</p>
+    <span className="inline-block px-3 py-1 rounded-full text-sm bg-indigo-500/20 text-indigo-400">
+      {post.category}
+    </span>
+  </div>
 );
 
 // Reviews data
@@ -286,35 +70,35 @@ const reviews = [
 
 // Features data
 const features = [
-  { 
-    icon: <Brain size={24} />, 
-    title: 'AI-Powered Answers', 
-    description: 'Get intelligent responses based on your organizations knowledge base' 
+  {
+    icon: <Brain size={24} />,
+    title: 'AI-Powered Answers',
+    description: 'Get intelligent responses based on your organizations knowledge base'
   },
-  { 
-    icon: <Shield size={24} />, 
-    title: 'Official Verification', 
-    description: 'Designated experts provide and verify authoritative answers' 
+  {
+    icon: <Shield size={24} />,
+    title: 'Official Verification',
+    description: 'Designated experts provide and verify authoritative answers'
   },
-  { 
-    icon: <Github size={24} />, 
-    title: 'GitHub Integration', 
-    description: 'Seamlessly connect with your repositories and documentation' 
+  {
+    icon: <Github size={24} />,
+    title: 'GitHub Integration',
+    description: 'Seamlessly connect with your repositories and documentation'
   },
-  { 
-    icon: <Search size={24} />, 
-    title: 'Smart Search', 
-    description: 'Find answers quickly with our advanced search capabilities' 
+  {
+    icon: <Search size={24} />,
+    title: 'Smart Search',
+    description: 'Find answers quickly with our advanced search capabilities'
   },
-  { 
-    icon: <MessageCircle size={24} />, 
-    title: 'Real-time Collaboration', 
-    description: 'Ask questions and get answers from your entire team' 
+  {
+    icon: <MessageCircle size={24} />,
+    title: 'Real-time Collaboration',
+    description: 'Ask questions and get answers from your entire team'
   },
-  { 
-    icon: <BookOpen size={24} />, 
-    title: 'Knowledge Base', 
-    description: 'Build a comprehensive library of verified solutions' 
+  {
+    icon: <BookOpen size={24} />,
+    title: 'Knowledge Base',
+    description: 'Build a comprehensive library of verified solutions'
   }
 ];
 
@@ -339,8 +123,8 @@ const ReviewCarousel = ({ reviews }) => {
   return (
     <div className="relative max-w-4xl mx-auto px-4">
       <div className="overflow-hidden rounded-2xl">
-        <div 
-          className="flex transition-transform duration-500 ease-out" 
+        <div
+          className="flex transition-transform duration-500 ease-out"
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}
         >
           {reviews.map((review, index) => (
@@ -366,16 +150,16 @@ const ReviewCarousel = ({ reviews }) => {
           ))}
         </div>
       </div>
-      
-      <button 
+
+      <button
         onClick={prevSlide}
         className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12 p-2 rounded-full bg-black/40 border border-gray-800 hover:bg-black/60 transition-all duration-200"
         aria-label="Previous slide"
       >
         <ChevronLeft className="text-white" />
       </button>
-      
-      <button 
+
+      <button
         onClick={nextSlide}
         className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-12 p-2 rounded-full bg-black/40 border border-gray-800 hover:bg-black/60 transition-all duration-200"
         aria-label="Next slide"
@@ -388,9 +172,8 @@ const ReviewCarousel = ({ reviews }) => {
           <button
             key={index}
             onClick={() => setCurrentIndex(index)}
-            className={`w-2 h-2 rounded-full transition-all duration-200 ${
-              index === currentIndex ? 'bg-indigo-500 w-4' : 'bg-gray-600'
-            }`}
+            className={`w-2 h-2 rounded-full transition-all duration-200 ${index === currentIndex ? 'bg-indigo-500 w-4' : 'bg-gray-600'
+              }`}
             aria-label={`Go to slide ${index + 1}`}
           />
         ))}
@@ -440,7 +223,7 @@ const LandingPage3 = () => {
             </p>
             <div className="flex justify-center space-x-4">
               <button className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg hover:scale-105 transition-all duration-300 shadow-lg shadow-indigo-500/25 flex items-center group">
-                Get Started 
+                Get Started
                 <ChevronRight className="ml-2 transform group-hover:translate-x-1 transition-transform" />
               </button>
               <button className="px-8 py-4 rounded-lg border border-gray-700 hover:border-indigo-500 transition-all duration-300 hover:scale-105">
