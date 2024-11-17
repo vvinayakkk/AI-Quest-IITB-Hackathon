@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
 class Wave {
@@ -56,7 +57,7 @@ class Wave {
   }
 }
 
-const BackgroundAnimation = () => {
+const BackgroundAnimation = ({ particleSize = 0.1 }) => {
   const containerRef = useRef(null);
   const sceneRef = useRef(null);
   const cameraRef = useRef(null);
@@ -117,14 +118,14 @@ const BackgroundAnimation = () => {
       'position',
       new THREE.BufferAttribute(positions, 3)
     );
+
     particlesGeometry.setAttribute(
       'color',
       new THREE.BufferAttribute(colors, 3)
     );
 
     const particlesMaterial = new THREE.PointsMaterial({
-      size: 0.05,
-      size: 0.1, // Increased size for better visibility
+      size: particleSize,
       vertexColors: true,
       transparent: true,
       opacity: 0.6,
@@ -152,7 +153,6 @@ const BackgroundAnimation = () => {
 
     // Handle window resize
     const handleResize = () => {
-      console.log("Resizing...");
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
@@ -162,24 +162,17 @@ const BackgroundAnimation = () => {
 
     // Cleanup function
     return () => {
-      console.log("Cleaning up...");
       window.removeEventListener('resize', handleResize);
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
-      }
-      if (scene && wave.mesh) {
-        scene.remove(wave.mesh);
-        scene.remove(particles);
       }
       particlesGeometry.dispose();
       particlesMaterial.dispose();
       wave.geometry.dispose();
       wave.material.dispose();
-      if (renderer) {
-        renderer.dispose();
-      }
+      renderer.dispose();
     };
-  }, []);
+  }, [particleSize]);
 
   return (
     <canvas
