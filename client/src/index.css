@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css?family=Host%20Grotesk:700|Geist:400");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -9,7 +11,7 @@
     --primary: 223 24% 28%;
     --secondary: 354 25% 70%;
     --accent: 44 25% 43%;
-    
+
     --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
@@ -76,7 +78,7 @@
   * {
     @apply border-border;
   }
-  
+
   body {
     @apply bg-background text-text;
   }

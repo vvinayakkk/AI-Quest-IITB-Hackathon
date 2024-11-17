@@ -1,12 +1,16 @@
 // import React from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Outlet, Route, Routes, useNavigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import LandingPage from '@/pages/LandingPage';
+import QAPlatform from '@/pages/QAPlatform';
+import { QuestionDetail, AskQuestion, UserProfile, TagsPage } from '@/pages/QADetail';
 import { ClerkProvider, SignIn, SignUp, useUser } from '@clerk/clerk-react';
 import Register from './pages/Register';
 import Login from './pages/Login';
 import MainLayout from './layout/MainLayout';
 import Home from './pages/Home';
+import { Loader2 } from 'lucide-react';
+import { useEffect } from 'react';
 import LandingPage3 from './pages/LandingPage3';
 
 const ProtectedRoute = ({ children }) => {
@@ -49,6 +53,11 @@ const App = () => {
         <Route element={<MainLayout />}>
           <Route element={<ProtectedRoute />}>
             <Route path="/home" element={<Home />} />
+            <Route path="/qa" element={<QAPlatform />} />
+            <Route path="/qa-detail" element={<QuestionDetail />} />
+            <Route path="/qa-ask" element={<AskQuestion />} />
+            <Route path="/user" element={<UserProfile />} />
+            <Route path="/tags" element={<TagsPage />} />
           </Route>
         </Route>
       </Routes>
