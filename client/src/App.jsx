@@ -1,7 +1,9 @@
 // import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { Toaster } from 'sonner';
-import LandingPage from '@/pages/LandingPage';
+
+import LandingPage from './pages/LandingPage3';
+
 
 const App = () => {
   return (
