@@ -1,16 +1,55 @@
 // import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { Toaster } from 'sonner';
+import LandingPage from '@/pages/LandingPage';
+import { ClerkProvider, SignIn, SignUp, useUser } from '@clerk/clerk-react';
+import Register from './pages/Register';
+import Login from './pages/Login';
+import MainLayout from './layout/MainLayout';
+import Home from './pages/Home';
 
-import LandingPage from './pages/LandingPage3';
+const ProtectedRoute = ({ children }) => {
+  const { isSignedIn, isLoaded, user } = useUser();
+  const username = user?.username || "Buddy";
+  console.log(user?.username);
+  const navigate = useNavigate();
 
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      navigate('/signup');
+    }
+  }, [isLoaded, isSignedIn, navigate]);
+
+  if (!isLoaded) {
+    return (
+      <div className="dark:bg-black flex justify-center items-center">
+        <Loader2 />
+      </div>
+    );
+  }
+
+  // // Pass `username` as a prop if rendering `Dashboard`
+  return isSignedIn ? (
+    <Outlet context={{ username }} />
+  ) : null;
+};
 
 const App = () => {
   return (
     <div>
       <Toaster position="bottom-right" richColors />
       <Routes>
+        {/* Routes without Layout */}
         <Route path="/" element={<LandingPage />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
+
+        {/* Routes with Layout */}
+        <Route element={<MainLayout />}>
+          <Route element={<ProtectedRoute />}>
+            <Route path="/home" element={<Home />} />
+          </Route>
+        </Route>
       </Routes>
     </div>
   );
