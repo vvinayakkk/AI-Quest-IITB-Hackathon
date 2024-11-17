@@ -399,7 +399,7 @@ const ReviewCarousel = ({ reviews }) => {
   );
 };
 
-const LandingPage = () => {
+const LandingPage3 = () => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {

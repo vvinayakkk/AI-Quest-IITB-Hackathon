@@ -7,6 +7,7 @@ import Register from './pages/Register';
 import Login from './pages/Login';
 import MainLayout from './layout/MainLayout';
 import Home from './pages/Home';
+import LandingPage3 from './pages/LandingPage3';
 
 const ProtectedRoute = ({ children }) => {
   const { isSignedIn, isLoaded, user } = useUser();
@@ -40,7 +41,7 @@ const App = () => {
       <Toaster position="bottom-right" richColors />
       <Routes>
         {/* Routes without Layout */}
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/" element={<LandingPage3  />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
 
