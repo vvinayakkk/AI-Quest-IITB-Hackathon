@@ -103,7 +103,7 @@ const Post = ({ post, searchTerm }) => {
             {post.tags.map(tag => (
               <span 
                 key={tag} 
-                className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium"
+                className="px-3 py-0.5 rounded-full bg-primary/10 text-primary text-sm font-medium border border-secondary"
               >
                 #{tag}
               </span>

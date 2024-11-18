@@ -12,6 +12,7 @@ import Home from './pages/Home';
 import { Loader2 } from 'lucide-react';
 import { useEffect } from 'react';
 import LandingPage3 from './pages/LandingPage3';
+import PostDetail from './pages/PostDetail';
 
 const ProtectedRoute = ({ children }) => {
   const { isSignedIn, isLoaded, user } = useUser();
@@ -50,9 +51,10 @@ const App = () => {
         <Route path="/login" element={<Login />} />
 
         {/* Routes with Layout */}
-        <Route element={<MainLayout />}>
-          <Route element={<ProtectedRoute />}>
+        <Route element={<ProtectedRoute />}>
+          <Route element={<MainLayout />}>
             <Route path="/home" element={<Home />} />
+            <Route path="/post" element={<PostDetail />} />
             <Route path="/qa" element={<QAPlatform />} />
             <Route path="/qa-detail" element={<QuestionDetail />} />
             <Route path="/qa-ask" element={<AskQuestion />} />
