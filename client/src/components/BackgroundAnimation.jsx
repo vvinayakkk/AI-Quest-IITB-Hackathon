@@ -100,10 +100,13 @@ const BackgroundAnimation = ({ particleSize = 0.1 }) => {
 
     // Add particles
     const particlesGeometry = new THREE.BufferGeometry();
-    const count = 2000;
+    const count = 9000;
     const positions = new Float32Array(count * 3);
     const colors = new Float32Array(count * 3);
-
+     
+    // crete a texture
+    const particleTexture = new THREE.TextureLoader().load('/circle.png');
+    
     for (let i = 0; i < count * 3; i += 3) {
       positions[i] = (Math.random() - 0.5) * 50;
       positions[i + 1] = (Math.random() - 0.5) * 50;
@@ -124,12 +127,16 @@ const BackgroundAnimation = ({ particleSize = 0.1 }) => {
       new THREE.BufferAttribute(colors, 3)
     );
 
+
+
     const particlesMaterial = new THREE.PointsMaterial({
       size: particleSize,
       vertexColors: true,
       transparent: true,
-      opacity: 0.6,
+      opacity: 0.9,
       blending: THREE.AdditiveBlending,
+      map: particleTexture,
+      sizeAttenuation: true,
     });
 
     const particles = new THREE.Points(particlesGeometry, particlesMaterial);
@@ -143,7 +150,7 @@ const BackgroundAnimation = ({ particleSize = 0.1 }) => {
         waveRef.current.update();
       }
 
-      particles.rotation.y += 0.0005;
+      particles.rotation.y += 0.0025;
       particles.rotation.x += 0.0002;
 
       renderer.render(scene, camera);
