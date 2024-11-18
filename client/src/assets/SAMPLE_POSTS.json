@@ -1,0 +1,279 @@
+[
+    {
+      "id": 1,
+      "username": "TechieTim",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=1",
+      "time": "3 hours ago",
+      "content": "How do I improve my JavaScript skills in 2024?",
+      "votes": 150,
+      "category": "Programming",
+      "tags": ["JavaScript", "WebDev", "Learning"],
+      "replies": [
+        {
+          "id": 1,
+          "username": "dev_master",
+          "content": "Focus on problem-solving and algorithms!",
+          "time": "2 hours ago"
+        },
+        {
+          "id": 2,
+          "username": "coder123",
+          "content": "Work on building small projects consistently.",
+          "time": "1 hour ago"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "username": "SciGuy23",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=2",
+      "time": "6 hours ago",
+      "content": "Any good resources for learning quantum computing?",
+      "votes": 95,
+      "category": "Science",
+      "tags": ["QuantumComputing", "Physics", "Learning"],
+      "replies": [
+        {
+          "id": 3,
+          "username": "quantumPro",
+          "content": "Check out the book 'Quantum Computation and Quantum Information'.",
+          "time": "5 hours ago"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "username": "GamerX",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=3",
+      "time": "2 days ago",
+      "content": "What's your opinion on Elden Ring vs Dark Souls?",
+      "votes": 230,
+      "category": "Gaming",
+      "tags": ["EldenRing", "DarkSouls", "RPG"],
+      "replies": [
+        {
+          "id": 4,
+          "username": "SoulMaster",
+          "content": "Elden Ring is more open-world, but Dark Souls has better combat mechanics.",
+          "time": "1 day ago"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "username": "DevGuru",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=4",
+      "time": "1 hour ago",
+      "content": "What's the best backend language for a small web app?",
+      "votes": 120,
+      "category": "Programming",
+      "tags": ["Backend", "WebDev", "NodeJS"],
+      "replies": [
+        {
+          "id": 5,
+          "username": "coderX",
+          "content": "Node.js is great for rapid development and handling multiple requests.",
+          "time": "30 minutes ago"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "username": "AstronautFan",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=5",
+      "time": "4 hours ago",
+      "content": "When do you think human colonies will be on Mars?",
+      "votes": 210,
+      "category": "Science",
+      "tags": ["Mars", "SpaceExploration", "Future"],
+      "replies": [
+        {
+          "id": 6,
+          "username": "spaceBuff",
+          "content": "In the next 30 years, but there will be challenges with resources and sustainability.",
+          "time": "3 hours ago"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "username": "FrontendFreak",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=6",
+      "time": "2 hours ago",
+      "content": "Should I learn React or Vue in 2024?",
+      "votes": 145,
+      "category": "Programming",
+      "tags": ["React", "Vue", "Frontend"],
+      "replies": [
+        {
+          "id": 7,
+          "username": "ReactMaster",
+          "content": "React has a larger community and more resources, but Vue is simpler to get started.",
+          "time": "1 hour ago"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "username": "CryptoKing",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=7",
+      "time": "7 hours ago",
+      "content": "Is Bitcoin still a good investment in 2024?",
+      "votes": 300,
+      "category": "Finance",
+      "tags": ["Bitcoin", "Investment", "Crypto"],
+      "replies": [
+        {
+          "id": 8,
+          "username": "blockchainExpert",
+          "content": "It’s volatile, but it could still be a good long-term hold if you believe in its future.",
+          "time": "6 hours ago"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "username": "GameDevPro",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=8",
+      "time": "3 days ago",
+      "content": "What are the best tools for mobile game development?",
+      "votes": 180,
+      "category": "Gaming",
+      "tags": ["GameDev", "Mobile", "Unity"],
+      "replies": [
+        {
+          "id": 9,
+          "username": "dev_guy",
+          "content": "Unity and Unreal are both excellent for mobile game development.",
+          "time": "2 days ago"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "username": "DeepLearningFan",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=9",
+      "time": "8 hours ago",
+      "content": "What’s the best framework for deep learning in 2024?",
+      "votes": 130,
+      "category": "Science",
+      "tags": ["DeepLearning", "AI", "MachineLearning"],
+      "replies": [
+        {
+          "id": 10,
+          "username": "AI_Expert",
+          "content": "TensorFlow and PyTorch are still the best, but keep an eye on JAX.",
+          "time": "7 hours ago"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "username": "CoderGuy123",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=10",
+      "time": "12 hours ago",
+      "content": "How do you handle state management in large React applications?",
+      "votes": 210,
+      "category": "Programming",
+      "tags": ["React", "StateManagement", "WebDev"],
+      "replies": [
+        {
+          "id": 11,
+          "username": "reduxFan",
+          "content": "Redux is still popular for large apps, but Context API and hooks work well too.",
+          "time": "11 hours ago"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "username": "FutureTechGuru",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=11",
+      "time": "5 hours ago",
+      "content": "What are the biggest challenges of AI in healthcare?",
+      "votes": 190,
+      "category": "Science",
+      "tags": ["AI", "Healthcare", "FutureTech"],
+      "replies": [
+        {
+          "id": 12,
+          "username": "medAI",
+          "content": "Data privacy, bias, and interpretability are huge challenges.",
+          "time": "4 hours ago"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "username": "CyberSecPro",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=12",
+      "time": "2 hours ago",
+      "content": "What are the latest trends in cybersecurity in 2024?",
+      "votes": 160,
+      "category": "Tech",
+      "tags": ["Cybersecurity", "TechTrends", "2024"],
+      "replies": [
+        {
+          "id": 13,
+          "username": "hackMaster",
+          "content": "AI-driven security tools and zero-trust networks are key trends.",
+          "time": "1 hour ago"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "username": "AI_Genius",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=13",
+      "time": "10 hours ago",
+      "content": "How can AI improve the education sector?",
+      "votes": 180,
+      "category": "Science",
+      "tags": ["AI", "Education", "TechForGood"],
+      "replies": [
+        {
+          "id": 14,
+          "username": "edTechInnovator",
+          "content": "AI can personalize learning experiences and help with administrative tasks.",
+          "time": "9 hours ago"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "username": "SpaceExplorer",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=14",
+      "time": "9 hours ago",
+      "content": "What are the plans for the next moon landing?",
+      "votes": 220,
+      "category": "Science",
+      "tags": ["Space", "MoonLanding", "NASA"],
+      "replies": [
+        {
+          "id": 15,
+          "username": "spaceTechFan",
+          "content": "NASA plans to return astronauts to the moon by 2025 through the Artemis program.",
+          "time": "8 hours ago"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "username": "DevQueen",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=15",
+      "time": "1 day ago",
+      "content": "What's the most efficient way to optimize performance in React apps?",
+      "votes": 200,
+      "category": "Programming",
+      "tags": ["React", "Performance", "WebDev"],
+      "replies": [
+        {
+          "id": 16,
+          "username": "reactExpert",
+          "content": "Use React.memo and lazy loading to improve performance.",
+          "time": "23 hours ago"
+        }
+      ]
+    }
+  ]
+  
