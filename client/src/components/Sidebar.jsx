@@ -28,28 +28,28 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="fixed left-12 top-[180px] max-h-[800px] w-72 
+      <div className="fixed left-12 top-[180px] max-h-[800px] w-72 
                     bg-background/95 rounded-xl border border-accent
                     shadow-[0_8px_30px_rgb(0,0,0,0.12)]
                     hover:shadow-[0_8px_30px_rgba(0,0,0,0.15)]
                     transition-all duration-300 ease-in-out
                     backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
-      
-      <Tabs.Root
-        className="p-4 text-text font-medium"
-        value={selectedTab}
-        orientation="vertical"
-        onValueChange={(val) => setSelectedTab(val)}
-      >
-        <Tabs.List
-          className="flex flex-col items-start gap-y-2 text-text font-medium"
-          aria-label="Navigation menu"
+        <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+
+        <Tabs.Root
+          className="p-4 text-text font-medium"
+          value={selectedTab}
+          orientation="vertical"
+          onValueChange={(val) => setSelectedTab(val)}
         >
-          {tabItems.map(({ name, icon: Icon }, idx) => (
-            <div key={idx} className="w-full relative group">
-              <Tabs.Trigger
-                className="w-full text-left px-4 py-3 rounded-lg
+          <Tabs.List
+            className="flex flex-col items-start gap-y-2 text-text font-medium"
+            aria-label="Navigation menu"
+          >
+            {tabItems.map(({ name, icon: Icon }, idx) => (
+              <div key={idx} className="w-full relative group">
+                <Tabs.Trigger
+                  className="w-full text-left px-4 py-3 rounded-lg
                           transition-all duration-200 ease-in-out
                           text-text/80 hover:text-primary
                           hover:bg-primary/10
@@ -57,54 +57,54 @@ const Sidebar = () => {
                           data-[state=active]:bg-primary/90 data-[state=active]:text-accent
                           data-[state=active]:shadow-[0_4px_15px_-3px_hsl(223,90%,73%/0.3)]
                           font-medium tracking-wide"
-                value={name}
-                onClick={() => handleTabClick(name)}
-              >
-                <div className="flex items-center gap-3">
-                  <Icon className="w-5 h-5 transition-transform duration-200 
+                  value={name}
+                  onClick={() => handleTabClick(name)}
+                >
+                  <div className="flex items-center gap-3">
+                    <Icon className="w-5 h-5 transition-transform duration-200 
                                  group-hover:scale-110" />
-                  <span>{name}</span>
-                  {(name === "Categories" || name === "Tags") && (
-                    <ChevronDownIcon
-                      className={`ml-auto w-5 h-5 transition-transform duration-200
+                    <span>{name}</span>
+                    {(name === "Categories" || name === "Tags") && (
+                      <ChevronDownIcon
+                        className={`ml-auto w-5 h-5 transition-transform duration-200
                                 ${name === "Categories" && isCategories ? 'rotate-180' : ''}
                                 ${name === "Tags" && isTags ? 'rotate-180' : ''}`}
-                    />
-                  )}
-                </div>
-              </Tabs.Trigger>
+                      />
+                    )}
+                  </div>
+                </Tabs.Trigger>
 
-              {/* Dropdown Menus */}
-              {(name === "Categories" || name === "Tags") && (
-                <div className={`overflow-hidden transition-all duration-300 ease-in-out
-                                ${(name === "Categories" && isCategories) || (name === "Tags" && isTags) 
-                                  ? 'max-h-64 opacity-100' 
-                                  : 'max-h-0 opacity-0'}`}>
-                  <div className="pt-2 pl-8">
-                    {(name === "Categories" ? categories : tags).map((item, idx) => (
-                      <button
-                        key={idx}
-                        className="w-full text-left px-4 py-2.5 rounded-md
+                {/* Dropdown Menus */}
+                {(name === "Categories" || name === "Tags") && (
+                  <div className={`overflow-hidden transition-all duration-300 ease-in-out
+                                ${(name === "Categories" && isCategories) || (name === "Tags" && isTags)
+                      ? 'max-h-64 opacity-100'
+                      : 'max-h-0 opacity-0'}`}>
+                    <div className="pt-2 pl-8">
+                      {(name === "Categories" ? categories : tags).map((item, idx) => (
+                        <button
+                          key={idx}
+                          className="w-full text-left px-4 py-2.5 rounded-md
                                  text-text/70 hover:text-primary
                                  hover:bg-primary/8
                                  transition-all duration-200
                                  flex items-center gap-2"
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
-                        <span>{name === "Tags" ? `#${item}` : item}</span>
-                      </button>
-                    ))}
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
+                          <span>{name === "Tags" ? `#${item}` : item}</span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </Tabs.List>
-      </Tabs.Root>
-      
-      {/* Bottom gradient border */}
-      <div className="absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
-    </div>
+                )}
+              </div>
+            ))}
+          </Tabs.List>
+        </Tabs.Root>
+
+        {/* Bottom gradient border */}
+        <div className="absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+      </div>
   );
 };
 

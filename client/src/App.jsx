@@ -13,6 +13,7 @@ import { Loader2 } from 'lucide-react';
 import { useEffect } from 'react';
 import LandingPage3 from './pages/LandingPage3';
 import PostDetail from './pages/PostDetail';
+import ProfilePage from './pages/ProfilePage';
 
 const ProtectedRoute = ({ children }) => {
   const { isSignedIn, isLoaded, user } = useUser();
@@ -59,6 +60,7 @@ const App = () => {
             <Route path="/qa-detail" element={<QuestionDetail />} />
             <Route path="/qa-ask" element={<AskQuestion />} />
             <Route path="/user" element={<UserProfile />} />
+            <Route path="/profile" element={<ProfilePage />} />
             <Route path="/tags" element={<TagsPage />} />
           </Route>
         </Route>
