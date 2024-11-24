@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { UserProfileButton } from './UserProfileButton';
 import { useUser } from "@clerk/clerk-react";
 import { Button } from './ui/button';
-import { AskQuestion } from '@/pages/QADetail';
+import AskQuestion from '@/pages/AskQuestion';
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
