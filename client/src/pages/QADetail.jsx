@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { AlertDialog, AlertDialogAction } from '@/components/ui/alert-dialog';
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { X } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ThumbsUp, ThumbsDown, MessageCircle, Check, Flag, Edit, Trash, Share } from 'lucide-react';
 
@@ -153,75 +156,88 @@ const QuestionDetail = () => {
 };
 
 // AskQuestion.js - Form for asking new questions
-const AskQuestion = () => {
-  const [title, setTitle] = useState('');
-  const [body, setBody] = useState('');
-  const [tags, setTags] = useState('');
+const AskQuestion = ({isOpen, setIsOpen}) => {
+  const [title, setTitle] = useState('')
+  const [body, setBody] = useState('')
+  const [tags, setTags] = useState('')
 
   const handleSubmit = (e) => {
-    e.preventDefault();
+    e.preventDefault()
     // Handle question submission
-  };
+    console.log({ title, body, tags })
+    setIsOpen(false)
+  }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Ask a Question</h1>
-      <Card>
-        <CardHeader>
-          <CardTitle>Writing a good question</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Title
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  placeholder="What's your programming question? Be specific."
-                />
-              </label>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Body
-                <textarea
-                  value={body}
-                  onChange={(e) => setBody(e.target.value)}
-                  rows={10}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  placeholder="Include all the information someone would need to answer your question"
-                />
-              </label>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Tags
-                <input
-                  type="text"
-                  value={tags}
-                  onChange={(e) => setTags(e.target.value)}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  placeholder="Add up to 5 tags to describe what your question is about"
-                />
-              </label>
-            </div>
-            <div>
-              <button
-                type="submit"
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                Post Your Question
-              </button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-gray-900 rounded-lg shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+        <div className="p-6 space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-3xl font-bold text-white">Ask a Question</h2>
+            <Button
+              onClick={() => setIsOpen(false)}
+              variant="ghost"
+              className="text-gray-400 hover:text-white"
+            >
+              <X className="h-6 w-6" />
+            </Button>
+          </div>
+
+          <Card className="bg-gray-800 border-purple-500/20">
+            <CardContent className="pt-5">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                  <label className="block text-md font-medium text-gray-300">
+                    Title
+                    <Input
+                      type="text"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      className="mt-1 bg-gray-700 border-gray-600 text-white"
+                      placeholder="What's your programming question? Be specific."
+                    />
+                  </label>
+                </div>
+                <div>
+                  <label className="block text-md font-medium text-gray-300">
+                    Body
+                    <Textarea
+                      value={body}
+                      onChange={(e) => setBody(e.target.value)}
+                      rows={10}
+                      className="mt-1 bg-gray-700 border-gray-600 text-white"
+                      placeholder="Include all the information someone would need to answer your question"
+                    />
+                  </label>
+                </div>
+                <div>
+                  <label className="block text-md font-medium text-gray-300">
+                    Tags
+                    <Input
+                      type="text"
+                      value={tags}
+                      onChange={(e) => setTags(e.target.value)}
+                      className="mt-1 bg-gray-700 border-gray-600 text-white"
+                      placeholder="Add up to 5 tags to describe what your question is about"
+                    />
+                  </label>
+                </div>
+                <div>
+                  <Button
+                    type="submit"
+                    className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                  >
+                    Post Your Question
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
-  );
-};
+  )
+}
 
 // UserProfile.js - User profile page
 const UserProfile = () => {

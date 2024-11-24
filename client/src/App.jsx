@@ -14,6 +14,7 @@ import { useEffect } from 'react';
 import LandingPage3 from './pages/LandingPage3';
 import PostDetail from './pages/PostDetail';
 import ProfilePage from './pages/ProfilePage';
+import NotificationsPage from './pages/NotificationPage';
 
 const ProtectedRoute = ({ children }) => {
   const { isSignedIn, isLoaded, user } = useUser();
@@ -62,6 +63,7 @@ const App = () => {
             <Route path="/user" element={<UserProfile />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/tags" element={<TagsPage />} />
+            <Route path="/notif" element={<NotificationsPage />} />
           </Route>
         </Route>
       </Routes>

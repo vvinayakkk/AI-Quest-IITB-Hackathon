@@ -51,6 +51,16 @@ export default function PostDetail() {
         <div className="space-y-4">
           {/* AI Reply */}
           <Card className="bg-blue-900/20 border-blue-500/20">
+          <div className="flex flex-col">
+            <div className="flex flex-col items-center gap-1">
+              <Button variant="ghost" size="icon" className="text-purple-400">
+                <ArrowUp className="h-5 w-5" />
+              </Button>
+              <span className="text-text font-bold">300</span>
+              <Button variant="ghost" size="icon" className="text-purple-400">
+                <ArrowDown className="h-5 w-5" />
+              </Button>
+            </div>
             <CardHeader className="flex flex-row items-center gap-4">
               <Avatar className="h-10 w-10 border-2 border-blue-500">
                 <AvatarImage src="/placeholder.svg" />
@@ -73,14 +83,11 @@ export default function PostDetail() {
                 <span>24</span>
               </Button>
               <Button variant="ghost" size="sm" className="gap-2">
-                <MessageSquare className="h-4 w-4" />
-                <span>Reply</span>
-              </Button>
-              <Button variant="ghost" size="sm" className="gap-2">
                 <Share2 className="h-4 w-4" />
                 <span>Share</span>
               </Button>
             </CardFooter>
+            </div>
           </Card>
 
           {/* User Reply */}
@@ -105,10 +112,6 @@ export default function PostDetail() {
               <Button variant="ghost" size="sm" className="gap-2">
                 <Heart className="h-4 w-4" />
                 <span>12</span>
-              </Button>
-              <Button variant="ghost" size="sm" className="gap-2">
-                <MessageSquare className="h-4 w-4" />
-                <span>Reply</span>
               </Button>
               <Button variant="ghost" size="sm" className="gap-2">
                 <Share2 className="h-4 w-4" />
