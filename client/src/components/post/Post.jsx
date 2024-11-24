@@ -3,8 +3,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardHeader } from "@/components/ui/card"
 import { formatTimeAgo, formatUTCTimestamp } from "@/utils/dateUtils"
 import ImageGallery from "./ImageGallery"
+import { Trash2 } from "lucide-react"
 
-export default function Post({ post }) {
+export default function Post({ post, onDelete, isOwnPost }) {
   if (!post) return null; // Add null check
 
   const parseMentionsAndHashtags = (text) => {
@@ -34,7 +35,18 @@ export default function Post({ post }) {
       animate={{ opacity: 1, y: 0 }}
       className="hover:shadow-lg hover:shadow-purple-500/10 transition-shadow duration-300"
     >
-      <Card className="bg-gray-900/95 border-purple-500/20 backdrop-blur">
+      <Card className="bg-gray-900/95 border-purple-500/20 backdrop-blur relative">
+        {isOwnPost && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="absolute top-4 right-4 text-red-400 hover:bg-red-500/10 transition-colors"
+            onClick={onDelete}
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete Post
+          </Button>
+        )}
         <CardHeader className="p-6">
           <div className="flex items-start gap-4">
             <Avatar className="h-12 w-12 rounded-xl border-2 border-purple-500/20">

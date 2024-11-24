@@ -6,9 +6,11 @@ import ReplyInput from "@/components/post/ReplyInput"
 import RelatedQuestions from "@/components/post/RelatedQuestions"
 import { getCurrentISOString } from "@/utils/dateUtils"
 import { samplePost } from "@/assets/sampleData"
+import { Navigate } from "react-router-dom"
 
 export default function PostDetail() {
   const [replies, setReplies] = useState(samplePost.replies)
+  const [isDeleted, setIsDeleted] = useState(false)
 
   const handleAddReply = (content) => {
     const newReply = {
@@ -48,6 +50,20 @@ export default function PostDetail() {
     ))
   }
 
+  const handleDeleteReply = (replyId) => {
+    setReplies(replies.filter(reply => reply.id !== replyId))
+  }
+
+  const handleDeletePost = () => {
+    setIsDeleted(true)
+    // Here you would typically make an API call to delete the post
+    // and then redirect to the posts list
+  }
+
+  if (isDeleted) {
+    return <Navigate to="/posts" />
+  }
+
   const sortedReplies = [...replies].sort((a, b) => {
     // Department verified answers have highest priority
     if (a.verified && !b.verified) return -1;
@@ -68,7 +84,11 @@ export default function PostDetail() {
       className="max-w-4xl mx-auto py-8 px-4 min-h-screen"
     >
       <div className="space-y-6">
-        <Post post={samplePost} />
+        <Post 
+          post={samplePost} 
+          onDelete={handleDeletePost}
+          isOwnPost={samplePost.author.id === 'currentUserId'} // Replace with actual user check
+        />
         
         <AnimatePresence mode="popLayout">
           {sortedReplies.map((reply, index) => (
@@ -84,6 +104,8 @@ export default function PostDetail() {
                 onVote={handleVote}
                 onFlag={handleFlag}
                 onVerify={handleVerify}
+                onDelete={handleDeleteReply}
+                isOwnReply={reply.author === 'CurrentUser'} // Replace with actual user check
               />
             </motion.div>
           ))}

@@ -1,11 +1,11 @@
 import { Card } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Share2, Flag, AlertCircle, BadgeCheck, ArrowUp, ArrowDown, Star } from 'lucide-react'
+import { Share2, Flag, AlertCircle, BadgeCheck, ArrowUp, ArrowDown, Star, Trash2 } from 'lucide-react'
 import { useState } from "react"
 import { formatTimeAgo, formatUTCTimestamp } from "@/utils/dateUtils"
 
-export default function Reply({ reply, onVote, onFlag, onVerify }) {
+export default function Reply({ reply, onVote, onFlag, onVerify, onDelete, isOwnReply }) {
   const [liked, setLiked] = useState(false)
   const [voteStatus, setVoteStatus] = useState(null)
 
@@ -144,6 +144,17 @@ export default function Reply({ reply, onVote, onFlag, onVerify }) {
               <Flag className="h-4 w-4" />
               <span>Flag</span>
             </Button>
+            {isOwnReply && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-2 text-red-400 hover:bg-red-500/10 transition-colors"
+                onClick={() => onDelete(reply.id)}
+              >
+                <Trash2 className="h-4 w-4" />
+                <span>Delete</span>
+              </Button>
+            )}
           </div>
         </div>
       </div>
