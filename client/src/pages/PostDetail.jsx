@@ -1,20 +1,49 @@
 import { motion, AnimatePresence } from "framer-motion"
-import { useState } from "react"
+import { useState, useEffect } from "react" // Import useEffect
 import Post from "@/components/post/Post"
 import Reply from "@/components/post/Reply"
 import ReplyInput from "@/components/post/ReplyInput"
 import RelatedQuestions from "@/components/post/RelatedQuestions"
 import { getCurrentISOString } from "@/utils/dateUtils"
-import { samplePost } from "@/assets/sampleData"
-import { Navigate } from "react-router-dom"
+import { samplePosts } from "@/assets/sampleData" // Import samplePosts
+import { Navigate, useParams } from "react-router-dom" // Import useParams
+import { Loader2 } from "lucide-react" // Add this import
 
 export default function PostDetail() {
-  const [replies, setReplies] = useState(samplePost.replies)
+  const { id } = useParams() // Get post id from URL
+  const [post, setPost] = useState(null) // Initialize state
+  const [replies, setReplies] = useState([])
   const [isDeleted, setIsDeleted] = useState(false)
+
+  useEffect(() => {
+    const foundPost = samplePosts.find(p => p.id === id)
+    if (foundPost) {
+      setPost(foundPost)
+      setReplies(foundPost.replies)
+      setIsDeleted(false)
+    } else {
+      setIsDeleted(true)
+    }
+  }, [id]) // Update when id changes
+
+  // Hooks must be called unconditionally above this line
+
+  if (isDeleted) {
+    return <Navigate to="/404" /> // Redirect if post not found
+  }
+
+  if (!post) {
+    return (
+      <div className="text-center py-8">
+        <Loader2 className="mx-auto h-8 w-8 animate-spin text-gray-400" />
+        <p className="text-gray-400 mt-4">Loading post...</p>
+      </div>
+    ) // Optional loading state
+  }
 
   const handleAddReply = (content) => {
     const newReply = {
-      id: replies.length + 1,
+      id: `r${replies.length + 1}`,
       type: 'user',
       author: 'CurrentUser',
       content,
@@ -60,10 +89,6 @@ export default function PostDetail() {
     // and then redirect to the posts list
   }
 
-  if (isDeleted) {
-    return <Navigate to="/posts" />
-  }
-
   const sortedReplies = [...replies].sort((a, b) => {
     // Department verified answers have highest priority
     if (a.verified && !b.verified) return -1;
@@ -85,9 +110,9 @@ export default function PostDetail() {
     >
       <div className="space-y-6">
         <Post 
-          post={samplePost} 
+          post={post} // Use post from samplePosts
           onDelete={handleDeletePost}
-          isOwnPost={samplePost.author.id === 'currentUserId'} // Replace with actual user check
+          isOwnPost={post.author.id === 'currentUserId'} // Check ownership
         />
         
         <AnimatePresence mode="popLayout">
@@ -112,7 +137,7 @@ export default function PostDetail() {
         </AnimatePresence>
 
         <ReplyInput onSubmit={handleAddReply} />
-        <RelatedQuestions />
+        <RelatedQuestions relatedQuestions={post.relatedQuestions} /> {/* Pass related questions */}
       </div>
     </motion.div>
   )

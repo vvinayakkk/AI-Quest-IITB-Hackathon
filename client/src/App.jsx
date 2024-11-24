@@ -57,7 +57,7 @@ const App = () => {
         <Route element={<ProtectedRoute />}>
           <Route element={<MainLayout />}>
             <Route path="/home" element={<Home />} />
-            <Route path="/post" element={<PostDetail />} />
+            <Route path="/post/:id" element={<PostDetail />} /> {/* Add :id parameter */}
             <Route path="/qa" element={<QAPlatform />} />
             <Route path="/qa-detail" element={<QuestionDetail />} />
             <Route path="/qa-ask" element={<AskQuestion />} />

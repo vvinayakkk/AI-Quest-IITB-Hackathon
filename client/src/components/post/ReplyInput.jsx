@@ -8,11 +8,11 @@ import { ActionButtons } from "./reply-input/ActionButtons"
 import { useReplyForm } from "@/hooks/useReplyForm"
 
 export default function ReplyInput({ onSubmit }) {
-  const { 
-    replyText, 
-    setReplyText, 
-    isLoading, 
-    handleSubmit, 
+  const {
+    replyText,
+    setReplyText,
+    isLoading,
+    handleSubmit,
     addEmoji,
     addMention,
     addHashtag,
@@ -33,9 +33,9 @@ export default function ReplyInput({ onSubmit }) {
                 placeholder="Share your thoughts..."
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
-                className="min-h-[120px] bg-background border-primary/20 text-foreground
+                className="min-h-[120px] bg-background border-primary/20 text-text
                          focus:ring-2 focus:ring-primary/20 transition-all
-                         resize-none rounded-xl p-4 pr-12 text-text"
+                         resize-none rounded-xl p-4 pr-12"
                 maxLength={500}
               />
               <div className="absolute bottom-4 right-4">
@@ -48,14 +48,14 @@ export default function ReplyInput({ onSubmit }) {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <EmojiPickerButton onEmojiSelect={addEmoji} />
-                <ActionButtons 
+                <ActionButtons
                   onMention={addMention}
                   onHashtag={addHashtag}
                   onFileUpload={handleFileUpload}
                 />
               </div>
 
-              <Button 
+              <Button
                 type="submit"
                 className="bg-primary hover:bg-primary/90 text-primary-foreground px-6"
                 disabled={!replyText.trim() || isLoading}

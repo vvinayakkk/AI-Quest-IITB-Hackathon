@@ -1,22 +1,14 @@
 import { motion } from "framer-motion"
 import { Card, CardHeader, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { formatTimeAgo, formatUTCTimestamp, getRelativeISOString, createTimestamp } from "@/utils/dateUtils"
+import { formatTimeAgo, formatUTCTimestamp } from "@/utils/dateUtils"
+import { Link } from "react-router-dom"
 
-const questions = [
-  {
-    title: "What are the risks of cryptocurrency investment?",
-    replies: 3,
-    timestamp: createTimestamp('2024-03-15', '08:00')
-  },
-  {
-    title: "How to secure your Bitcoin wallet?",
-    replies: 5,
-    timestamp: createTimestamp('2024-03-14', '13:30')
+export default function RelatedQuestions({ relatedQuestions }) {
+  if (!relatedQuestions || relatedQuestions.length === 0) {
+    return null; // Return if no related questions
   }
-]
 
-export default function RelatedQuestions() {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -27,8 +19,8 @@ export default function RelatedQuestions() {
           <h3 className="text-text text-xl font-bold">Related Questions</h3>
         </CardHeader>
         <CardContent className="space-y-4">
-          {questions.map((question, index) => (
-            <div key={index} className="flex justify-between items-center">
+          {relatedQuestions.map((question) => (
+            <div key={question.id} className="flex justify-between items-center">
               <div className="flex-1">
                 <h4 className="text-text font-medium">{question.title}</h4>
                 <p className="text-sm text-gray-400">
@@ -38,9 +30,11 @@ export default function RelatedQuestions() {
                   </span>
                 </p>
               </div>
-              <Button variant="outline" className="text-text border-purple-500/20 hover:bg-purple-500/10">
-                View
-              </Button>
+              <Link to={`/post/${question.id}`}>
+                <Button variant="outline" className="text-text border-purple-500/20 hover:bg-purple-500/10">
+                  View
+                </Button>
+              </Link>
             </div>
           ))}
         </CardContent>
