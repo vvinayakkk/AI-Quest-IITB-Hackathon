@@ -1,3 +1,4 @@
+import { useUser } from "@clerk/clerk-react"
 import { Bar, BarChart, Line, LineChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts"
 import { Award, BookMarked, CheckCircle2, MessageSquare, Star, Trophy, Users2 } from 'lucide-react'
 
@@ -76,6 +77,24 @@ const badgesData = {
 };
 
 export default function ProfilePage() {
+  const { user, isLoading } = useUser();
+
+  if (isLoading) {
+    return (
+      <div className="flex ml-[330px] justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex ml-[330px] justify-center items-center min-h-screen">
+        <p className="text-text">Please sign in to view your profile.</p>
+      </div>
+    );
+  }
+
   return (        
     <div className="flex ml-[330px] flex-col gap-6 p-6 bg-background text-text min-h-screen">
       {/* Profile Header */}
@@ -84,19 +103,21 @@ export default function ProfilePage() {
           <CardContent className="pt-6">
             <div className="flex flex-col items-center gap-4">
               <Avatar className="h-32 w-32">
-                <AvatarImage src="/placeholder.svg" alt="User avatar" />
-                <AvatarFallback>JD</AvatarFallback>
+                <AvatarImage src={user.imageUrl} alt={user.fullName} />
+                <AvatarFallback>{user.firstName?.charAt(0)}{user.lastName?.charAt(0)}</AvatarFallback>
               </Avatar>
               <div className="flex flex-col items-center gap-2">
                 <div className="flex items-center gap-2">
-                  <h2 className="text-2xl font-bold text-text">John Doe</h2>
-                  <CheckCircle2 className="h-5 w-5 text-accent" />
+                  <h2 className="text-2xl font-bold text-text">{user.fullName}</h2>
+                  {user.emailAddresses[0].verified && (
+                    <CheckCircle2 className="h-5 w-5 text-accent" />
+                  )}
                 </div>
-                <Badge className="bg-secondary text-text">Senior Developer</Badge>
-                <p className="text-sm text-text">Engineering Department</p>
+                <Badge className="bg-secondary text-text">{user.publicMetadata?.role || "Member"}</Badge>
+                <p className="text-sm text-text">{user.publicMetadata?.department || "No department set"}</p>
                 <div className="flex items-center gap-2 text-sm text-text">
                   <Users2 className="h-4 w-4" />
-                  <span>Member since March 2022</span>
+                  <span>Member since {new Date(user.createdAt).toLocaleDateString()}</span>
                 </div>
               </div>
               <div className="flex gap-2">

@@ -15,6 +15,7 @@ import LandingPage3 from './pages/LandingPage3';
 import PostDetail from './pages/PostDetail';
 import ProfilePage from './pages/ProfilePage';
 import NotificationsPage from './pages/NotificationPage';
+import CategoriesPage from './pages/CategoriesPage';
 
 const ProtectedRoute = ({ children }) => {
   const { isSignedIn, isLoaded, user } = useUser();
@@ -64,6 +65,7 @@ const App = () => {
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/tags" element={<TagsPage />} />
             <Route path="/notif" element={<NotificationsPage />} />
+            <Route path="/categories" element={<CategoriesPage />} />
           </Route>
         </Route>
       </Routes>
