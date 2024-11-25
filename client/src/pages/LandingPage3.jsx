@@ -52,7 +52,7 @@ const reviews = [
   {
     name: "Sarah Johnson",
     role: "Engineering Lead",
-    content: "KnowledgeHub has transformed how our team shares information. The AI-powered responses are incredibly accurate.",
+    content: "AskGenie has transformed how our team shares information. The AI-powered responses are incredibly accurate.",
     rating: 5
   },
   {
@@ -201,12 +201,12 @@ const LandingPage3 = () => {
           <div className="flex justify-between h-16">
             <div className="flex items-center">
               <span className="text-2xl font-bold bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
-                KnowledgeHub
+                AskGenie
               </span>
             </div>
             <div className="flex items-center">
-              <button onClick={() => navigate('/register')} className="px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:scale-105 transition-all duration-300 shadow-lg shadow-indigo-500/25">
-                Sign In
+              <button className="px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:scale-105 transition-all duration-300 shadow-lg shadow-indigo-500/25">
+                Already Signed In
               </button>
             </div>
           </div>
@@ -224,7 +224,8 @@ const LandingPage3 = () => {
               Harness the power of AI to transform your team's knowledge sharing
             </p>
             <div className="flex justify-center space-x-4">
-              <button className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg hover:scale-105 transition-all duration-300 shadow-lg shadow-indigo-500/25 flex items-center group">
+              <button className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg hover:scale-105 transition-all duration-300 shadow-lg shadow-indigo-500/25 flex items-center group"
+              onClick={() => navigate('/home')}>
                 Get Started
                 <ChevronRight className="ml-2 transform group-hover:translate-x-1 transition-transform" />
               </button>
@@ -318,7 +319,7 @@ const LandingPage3 = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
               <span className="text-2xl font-bold bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
-                KnowledgeHub
+                AskGenie
               </span>
               <p className="mt-4 text-gray-400">
                 Transforming team knowledge sharing with the power of AI
@@ -350,7 +351,7 @@ const LandingPage3 = () => {
             </div>
           </div>
           <div className="mt-12 pt-8 border-t border-gray-800 text-center text-gray-400">
-            <p>© 2024 KnowledgeHub. All rights reserved.</p>
+            <p>© 2024 AskGenie. All rights reserved.</p>
           </div>
         </div>
       </footer>

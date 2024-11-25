@@ -18,7 +18,7 @@ export const VideoModal = ({ isOpen, onClose }) => {
           <iframe
             className="w-full h-full"
             src="https://www.youtube.com/embed/your-video-id"
-            title="Q&A Hub Introduction"
+            title="AskGenie Introduction"
             frameBorder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen

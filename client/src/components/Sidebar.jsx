@@ -102,14 +102,14 @@ const Sidebar = () => {
           </Tabs.List>
         </Tabs.Root>
 
-        {/* Gennie Bot Avatar */}
+        {/* Genie Bot Avatar */}
         <div className="p-4 border-t border-accent/20">
           <div className="flex items-center gap-3 px-4 py-3 rounded-lg 
                          bg-primary/5 hover:bg-primary/10 transition-all duration-200
                          cursor-pointer">
             <Bot className="w-6 h-6 text-primary" />
             <div>
-              <div className="text-sm font-medium text-text">Gennie Bot</div>
+              <div className="text-sm font-medium text-text">Genie Bot</div>
               <div className="text-xs text-text/60">AI Assistant</div>
             </div>
           </div>
