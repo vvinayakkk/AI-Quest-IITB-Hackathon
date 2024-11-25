@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Users, MessageCircle, Award, Search, Github, BookOpen, ChevronRight, Star, Shield, Brain, ChevronLeft, Calendar } from 'lucide-react';
 import BackgroundAnimation from '@/components/BackgroundAnimation';
 import AnimatedCounter from '@/components/AnimatedCounter';
+import { useNavigate } from 'react-router-dom';
 
 // Blog posts data
 const blogPosts = [
@@ -184,6 +185,7 @@ const ReviewCarousel = ({ reviews }) => {
 
 const LandingPage3 = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setIsVisible(true);
@@ -203,7 +205,7 @@ const LandingPage3 = () => {
               </span>
             </div>
             <div className="flex items-center">
-              <button className="px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:scale-105 transition-all duration-300 shadow-lg shadow-indigo-500/25">
+              <button onClick={() => navigate('/register')} className="px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:scale-105 transition-all duration-300 shadow-lg shadow-indigo-500/25">
                 Sign In
               </button>
             </div>

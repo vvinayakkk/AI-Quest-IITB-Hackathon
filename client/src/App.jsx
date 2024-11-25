@@ -8,11 +8,10 @@ import { Toaster } from 'sonner';
 // Components & Layout
 import MainLayout from './layout/MainLayout';
 
-// Pages
+
 import AskQuestion from '@/pages/AskQuestion';
 import CategoriesPage from './pages/CategoriesPage';
 import Home from './pages/Home';
-import LandingPage from '@/pages/LandingPage';
 import LandingPage3 from './pages/LandingPage3';
 import Login from './pages/Login';
 import NotificationsPage from './pages/NotificationPage';
@@ -21,7 +20,6 @@ import ProfilePage from './pages/ProfilePage';
 import Register from './pages/Register';
 import TagsPage from '@/pages/TagsPage';
 
-// Icons
 import { Loader2 } from 'lucide-react';
 
 const ProtectedRoute = ({ children }) => {

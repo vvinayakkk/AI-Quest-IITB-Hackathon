@@ -3,8 +3,8 @@ import { SignIn } from '@clerk/clerk-react'
 
 const Login = () => {
   return (
-    <div className='bg-[#ff7f50] w-full h-screen flex justify-center items-center'>
-      <SignIn />
+    <div className='bg-primary h-screen flex justify-center items-center'>
+      <SignIn afterSignInUrl='/home'/>
     </div>
   )
 }
