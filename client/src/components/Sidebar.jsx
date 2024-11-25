@@ -28,7 +28,7 @@ const Sidebar = () => {
   };
 
   return (
-      <div className="fixed left-12 top-[180px] max-h-[800px] w-72 
+      <div className="fixed left-4 top-[180px] max-h-[800px] w-72 
                     bg-background/95 rounded-xl border border-accent
                     shadow-[0_8px_30px_rgb(0,0,0,0.12)]
                     hover:shadow-[0_8px_30px_rgba(0,0,0,0.15)]

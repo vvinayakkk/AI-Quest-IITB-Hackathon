@@ -1,52 +1,60 @@
-
 import React, { useState } from 'react';
 import { UserProfileButton } from './UserProfileButton';
 import { useUser } from "@clerk/clerk-react";
 import { Button } from './ui/button';
+import { SearchBar } from './search/SearchBar';
+import { NavigationLink, navigationItems } from './navigation/NavigationItems';
+import { MobileMenu } from './navigation/MobileMenu';
+import { NotificationDropdown } from './navigation/NotificationDropdown';
+import { VideoModal } from './modals/VideoModal';
+import { Logo } from './navigation/Logo';
 import AskQuestion from '@/pages/AskQuestion';
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [showVideo, setShowVideo] = useState(false);
   const { isSignedIn } = useUser();
-
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
+  const [notificationCount] = useState(4);
 
   return (
     <>
       <nav className="sticky top-0 z-50 bg-background/95 border-b border-accent shadow-lg backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="max-w-screen-xl mx-auto flex items-center justify-between p-4">
-          <a href="/" className="flex items-center space-x-3 rtl:space-x-reverse">
-            <img
-              src="/circle.png"
-              className="h-8"
-              alt="QA Logo"
-            />
-            <span className="text-text text-2xl font-semibold">
-              Q&A Hub
-            </span>
-          </a>
+          <div className="flex items-center space-x-4">
+            <Logo />
+            <button 
+              onClick={() => setShowVideo(true)}
+              className="p-2 rounded-full hover:bg-accent/10 transition"
+            >
+              <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </button>
+          </div>
 
-          {/* Navigation Links */}
-          <div className="hidden md:flex items-center space-x-6">
-            <Button onClick={() => setIsOpen(true)} className="bg-accent hover:bg-secondary text-white">
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex flex-1 max-w-xl mx-8">
+            <SearchBar />
+          </div>
+
+          {/* Desktop Menu Items */}
+          <div className="hidden md:flex items-center space-x-4">
+            {navigationItems.map((item, index) => (
+              <NavigationLink key={index} {...item} />
+            ))}
+            <Button onClick={() => setIsOpen(true)} className="bg-accent hover:bg-secondary text-white flex items-center">
+              <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
               Ask a Question
             </Button>
-            <a
-              href="/categories"
-              className="text-sm font-medium text-primary hover:text-accent transition"
-            >
-              Categories
-            </a>
+            <NotificationDropdown count={notificationCount} />
             {isSignedIn ? (
               <UserProfileButton />
             ) : (
-              <a
-                href="/sign-in"
-                className="text-sm font-medium text-primary hover:text-accent transition"
-              >
+              <a href="/sign-in" className="text-sm font-medium text-primary hover:text-accent transition">
                 Sign In
               </a>
             )}
@@ -55,80 +63,24 @@ const Navbar = () => {
           {/* Mobile Menu Button */}
           <button
             type="button"
-            onClick={toggleMobileMenu}
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="md:hidden text-primary hover:text-accent focus:outline-none focus:ring-2 focus:ring-accent rounded-lg"
           >
-            <svg
-              className="w-6 h-6"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M4 6h16M4 12h16m-7 6h7"
-              />
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16m-7 6h7" />
             </svg>
           </button>
         </div>
 
-        {/* Mobile Menu */}
-        <div className={`md:hidden ${isMobileMenuOpen ? 'block' : 'hidden'}`}>
-          <div className="px-4 pt-2 pb-3 space-y-1">
-            <div className="relative mb-4">
-              <svg
-                className="absolute left-3 top-3 w-5 h-5 text-primary"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z"
-                />
-              </svg>
-              <input
-                type="text"
-                className="w-full bg-background text-text rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-primary focus:border-primary placeholder-primary"
-                placeholder="Search for questions..."
-              />
-            </div>
-            <a
-              href="/qa-ask"
-              className="block px-4 py-2 text-sm font-medium text-background bg-primary rounded-lg hover:bg-accent transition"
-            >
-              Ask a Question
-            </a>
-            <a
-              href="/categories"
-              className="block px-4 py-2 text-sm font-medium text-primary hover:text-accent transition"
-            >
-              Categories
-            </a>
-            {isSignedIn ? (
-              <div className="px-4 py-2">
-                <UserProfileButton />
-              </div>
-            ) : (
-              <a
-                href="/sign-in"
-                className="block px-4 py-2 text-sm font-medium text-primary hover:text-accent transition"
-              >
-                Sign In
-              </a>
-            )}
-          </div>
-        </div>
+        <MobileMenu
+          isOpen={isMobileMenuOpen}
+          notificationCount={notificationCount}
+          isSignedIn={isSignedIn}
+        />
       </nav>
-      {isOpen && (
-        <AskQuestion isOpen={isOpen} setIsOpen={setIsOpen} />
-      )}
+
+      <VideoModal isOpen={showVideo} onClose={() => setShowVideo(false)} />
+      {isOpen && <AskQuestion isOpen={isOpen} setIsOpen={setIsOpen} />}
     </>
   );
 };

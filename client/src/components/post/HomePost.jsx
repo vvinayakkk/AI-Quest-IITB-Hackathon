@@ -47,7 +47,7 @@ export default function HomePost({ post }) {
             </Avatar>
             
             <div className="flex-1 space-y-3">
-              <Link to={`/posts/${post.id}`}>
+              <Link to={`/post/${post.id}`}>
                 <h2 className="text-lg sm:text-xl font-bold text-white leading-tight break-words 
                              group-hover:text-primary transition-colors">
                   {parseMentionsAndHashtags(post.title)}
@@ -88,7 +88,7 @@ export default function HomePost({ post }) {
                   <span className="text-sm">{post.replies?.length || 0} replies</span>
                 </div>
 
-                <Link to={`/posts/${post.id}`}>
+                <Link to={`/post/${post.id}`}>
                   <Button
                     variant="outline"
                     size="sm"
