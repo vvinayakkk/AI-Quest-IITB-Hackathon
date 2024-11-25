@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import * as Tabs from "@radix-ui/react-tabs";
 import { useNavigate } from 'react-router-dom';
-import { ChevronDownIcon, HomeIcon, BookmarkIcon, LayersIcon, TagIcon, UserIcon } from 'lucide-react';
+import { ChevronDownIcon, HomeIcon, BookmarkIcon, LayersIcon, TagIcon, UserIcon, Bot } from 'lucide-react';
 
 const Sidebar = () => {
   const [selectedTab, setSelectedTab] = useState("Topics");
@@ -101,6 +101,19 @@ const Sidebar = () => {
             ))}
           </Tabs.List>
         </Tabs.Root>
+
+        {/* Gennie Bot Avatar */}
+        <div className="p-4 border-t border-accent/20">
+          <div className="flex items-center gap-3 px-4 py-3 rounded-lg 
+                         bg-primary/5 hover:bg-primary/10 transition-all duration-200
+                         cursor-pointer">
+            <Bot className="w-6 h-6 text-primary" />
+            <div>
+              <div className="text-sm font-medium text-text">Gennie Bot</div>
+              <div className="text-xs text-text/60">AI Assistant</div>
+            </div>
+          </div>
+        </div>
 
         {/* Bottom gradient border */}
         <div className="absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
