@@ -23,6 +23,7 @@ app.use(morgan("dev"));
 app.use("/auth", authRouter);
 app.use('/user',userRouter);
 // Connect to MongoDB
+
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {

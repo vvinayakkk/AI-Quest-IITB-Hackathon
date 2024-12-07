@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useAuth } from '../contexts/AuthContext';
 import { User, Mail, Lock, Shield, BookMarked } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,6 +17,7 @@ const Signup = () => {
   });
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { register } = useAuth();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -43,13 +44,8 @@ const Signup = () => {
 
     try {
       const { confirmPassword, ...submitData } = formData;
-      const response = await axios.post('http://localhost:3000/auth/signup', submitData);
-
-      // Store the token in localStorage
-      localStorage.setItem('token', response.data.token);
-      
-      // Redirect to profile page
-      navigate('/profile');
+      await register(submitData);
+      navigate('/home');
     } catch (err) {
       setError(err.response?.data?.message || 'Signup failed. Please try again.');
     }

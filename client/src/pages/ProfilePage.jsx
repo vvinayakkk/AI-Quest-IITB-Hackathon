@@ -15,6 +15,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 
 import { Bar, BarChart, Line, LineChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
+import { useAuth } from '../contexts/AuthContext';
+
+const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
 const activityData = [
     { name: "Jan 2024", questions: 40, answers: 24 },
@@ -40,27 +43,25 @@ const reputationData = [
   { name: "Sun", value: 400 },
 ]
 
-const badgesData = {
+// Update badges data to match schema
+const sampleBadgesData = {
   gold: [
     {
       name: "Problem Solver",
       description: "Solved 500 questions",
       progress: 85,
-      icon: Trophy,
       earned: true
     },
     {
       name: "Top Contributor",
       description: "1000+ helpful answers",
       progress: 100,
-      icon: Award,
       earned: true
     },
     {
       name: "Expert",
       description: "Maintained 90% acceptance rate",
       progress: 65,
-      icon: Star,
       earned: false
     }
   ],
@@ -69,22 +70,40 @@ const badgesData = {
       name: "Quick Learner",
       description: "Solved 100 questions",
       progress: 100,
-      icon: BookMarked,
       earned: true
     },
     {
       name: "Helper",
       description: "100+ accepted answers",
       progress: 100,
-      icon: MessageSquare,
       earned: true
     }
   ]
-}
+};
+
+// Sample user data matching schema
+const sampleUser = {
+  firstName: "John",
+  lastName: "Doe",
+  email: "john@example.com",
+  role: "Member",
+  department: "Engineering",
+  verified: true,
+  reputation: 15234,
+  answers: 1429,
+  badgesCount: {
+    total: 47,
+    gold: 12,
+    silver: 20,
+    bronze: 15
+  },
+  badges: sampleBadgesData,
+  avatar: null,
+  createdAt: new Date("2023-01-01")
+};
 
 export default function ProfilePage() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { user: authUser, logout } = useAuth();
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [newPost, setNewPost] = useState({
     title: '',
@@ -93,81 +112,23 @@ export default function ProfilePage() {
   });
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    
-    if (!token) {
-      navigate('/login');
-    }
-
-    const fetchUserProfile = async () => {
-      try {
-        const response = await axios.get('http://localhost:3000/user/profile', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        setUser(response.data);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching profile', error);
-        localStorage.removeItem('token');
-        navigate('/login');
-      }
-    };
-
-    fetchUserProfile();
-  }, [navigate]);
-
   const handleLogout = () => {
-    localStorage.removeItem('token');
+    logout();
     navigate('/login');
   };
 
   const handleCreatePost = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
-      await axios.post('http://localhost:3000/posts', newPost, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      // Reset form and close modal
+      await axios.post(`${SERVER_URL}/posts`, newPost);
       setNewPost({ title: '', content: '', tags: '' });
       setIsPostModalOpen(false);
-      
-      // Optional: Refresh posts or show success message
     } catch (error) {
       console.error('Error creating post', error);
     }
   };
 
-  if (loading) {
-    return (
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="flex justify-center items-center min-h-screen bg-gray-900"
-      >
-        <motion.div 
-          animate={{ 
-            rotate: 360,
-            transition: { 
-              duration: 1, 
-              repeat: Infinity, 
-              ease: "linear" 
-            } 
-          }}
-          className="w-16 h-16 border-4 border-transparent border-b-purple-500 rounded-full"
-        />
-      </motion.div>
-    );
-  }
-
-  if (!user) {
+  if (!authUser) {
     return (
       <motion.div 
         initial={{ opacity: 0 }}
@@ -178,6 +139,90 @@ export default function ProfilePage() {
       </motion.div>
     );
   }
+
+  // Update user stats section
+  const UserStats = ({ user }) => (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1">
+      <Card className="bg-gray-800 border-purple-500/20">
+        <CardHeader>
+          <CardTitle className="text-sm font-medium text-white">Reputation</CardTitle>
+          <Trophy className="h-4 w-4 text-purple-500" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold text-white">{user.reputation}</div>
+          <p className="text-xs text-gray-400">+180 this week</p>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-gray-800 border-purple-500/20">
+        <CardHeader>
+          <CardTitle className="text-sm font-medium text-white">Answers</CardTitle>
+          <MessageSquare className="h-4 w-4 text-purple-500" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold text-white">{user.answers}</div>
+          <p className="text-xs text-gray-400">92% acceptance rate</p>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-gray-800 border-purple-500/20">
+        <CardHeader>
+          <CardTitle className="text-sm font-medium text-white">Badges</CardTitle>
+          <Award className="h-4 w-4 text-purple-500" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold text-white">{user.badgesCount.total}</div>
+          <div className="flex gap-1 text-xs">
+            <span className="text-yellow-500">{user.badgesCount.gold} Gold</span>
+            <span>•</span>
+            <span className="text-gray-400">{user.badgesCount.silver} Silver</span>
+            <span>•</span>
+            <span className="text-amber-600">{user.badgesCount.bronze} Bronze</span>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  // Update badges section
+  const BadgesSection = ({ badges, type, icon: Icon, color }) => (
+    <div>
+      <div className="flex items-center gap-2 mb-4">
+        <Icon className={`h-6 w-6 fill-${color} text-${color}`} />
+        <h3 className="text-xl font-bold text-white">{type} Badges</h3>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {badges.map((badge, i) => (
+          <Card key={i} className="bg-gray-800/50 border-purple-500/20">
+            <CardContent className="pt-4">
+              {/* ...existing badge content... */}
+              <div className="flex gap-3 items-start">
+                <div className={`p-2 rounded-full ${badge.earned ? `bg-${color}/20` : 'bg-gray-700/20'}`}>
+                  <Icon className={`h-5 w-5 ${badge.earned ? `text-${color}` : 'text-gray-400'}`} />
+                </div>
+                <div className="flex-1 space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-semibold text-sm text-white">{badge.name}</h4>
+                    {badge.earned && <CheckCircle2 className="h-3 w-3 text-green-500" />}
+                  </div>
+                  <p className="text-xs text-gray-400">{badge.description}</p>
+                  <div className="space-y-1">
+                    <div className="h-1.5 rounded-full bg-gray-700">
+                      <div 
+                        className={`h-full rounded-full ${badge.earned ? `bg-${color}` : 'bg-gray-500'}`}
+                        style={{ width: `${badge.progress}%` }}
+                      />
+                    </div>
+                    <p className="text-[10px] text-gray-400">{badge.progress}% completed</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
 
   return (        
     <motion.div 
@@ -190,11 +235,11 @@ export default function ProfilePage() {
       <div className="sidebar">
         <div className="sidebar-header">
           <div className="avatar">
-            <span className="initials">{user.firstName?.charAt(0)}{user.lastName?.charAt(0)}</span>
+            <span className="initials">{authUser.firstName?.charAt(0)}{authUser.lastName?.charAt(0)}</span>
           </div>
           <div className="user-info">
-            <h3>{user.firstName} {user.lastName}</h3>
-            <p>{user.role || "Member"}</p>
+            <h3>{authUser.firstName} {authUser.lastName}</h3>
+            <p>{authUser.role || "Member"}</p>
           </div>
         </div>
         <nav className="sidebar-nav">
@@ -255,7 +300,7 @@ export default function ProfilePage() {
                 >
                   <Avatar className="h-32 w-32">
                     <AvatarFallback className="bg-purple-500 text-white">
-                      {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
+                      {authUser.firstName?.charAt(0)}{authUser.lastName?.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
                 </motion.div>
@@ -269,22 +314,22 @@ export default function ProfilePage() {
                 >
                   <div className="flex items-center gap-2">
                     <h2 className="text-2xl font-bold text-white">
-                      {user.firstName} {user.lastName}
+                      {authUser.firstName} {authUser.lastName}
                     </h2>
-                    {user.verified && (
+                    {authUser.verified && (
                       <CheckCircle2 className="h-5 w-5 text-green-500" />
                     )}
                   </div>
                   <Badge className="bg-purple-500/20 text-purple-400">
-                    {user.role || "Member"}
+                    {authUser.role || "Member"}
                   </Badge>
                   <p className="text-sm text-gray-400">
-                    {user.department || "No department set"}
+                    {authUser.department || "No department set"}
                   </p>
                   <div className="flex items-center gap-2 text-sm text-gray-400">
                     <Users2 className="h-4 w-4" />
                     <span>
-                      Member since {new Date(user.createdAt).toLocaleDateString()}
+                      Member since {new Date(authUser.createdAt).toLocaleDateString()}
                     </span>
                   </div>
                 </motion.div>
@@ -315,60 +360,7 @@ export default function ProfilePage() {
           </Card>
 
           {/* Stats Overview */}
-          <motion.div 
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1"
-          >
-            {/* Reputation Card */}
-            <Card className="bg-gray-800 border-purple-500/20 shadow-md hover:shadow-lg transition-shadow">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-white">
-                  Reputation
-                </CardTitle>
-                <Trophy className="h-4 w-4 text-purple-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-white">{user.reputation || '15,234'}</div>
-                <p className="text-xs text-gray-400">+180 this week</p>
-              </CardContent>
-            </Card>
-
-            {/* Answers Card */}
-            <Card className="bg-gray-800 border-purple-500/20 shadow-md hover:shadow-lg transition-shadow">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-white">
-                  Answers
-                </CardTitle>
-                <MessageSquare className="h-4 w-4 text-purple-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-white">{user.answers || '1,429'}</div>
-                <p className="text-xs text-gray-400">92% acceptance rate</p>
-              </CardContent>
-            </Card>
-
-            {/* Badges Card */}
-            <Card className="bg-gray-800 border-purple-500/20 shadow-md hover:shadow-lg transition-shadow">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-white">
-                  Badges
-                </CardTitle>
-                <Award className="h-4 w-4 text-purple-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-white">{user.badgesCount?.total || '47'}</div>
-                <div className="flex gap-1 text-xs text-gray-400">
-                  <span className="text-yellow-500">{user.badgesCount?.gold || '12'} Gold</span>
-                  <span>•</span>
-                  <span className="text-gray-400">{user.badgesCount?.silver || '20'} Silver</span>
-                  <span>•</span>
-                  <span className="text-amber-600">{user.badgesCount?.bronze || '15'} Bronze</span>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+          <UserStats user={authUser} />
         </div>
 
         {/* Detailed Analytics */}
@@ -466,79 +458,18 @@ export default function ProfilePage() {
           {/* Badges Tab Content */}
           <TabsContent value="badges" className="mt-6">
             <div className="grid gap-6">
-              {/* Gold Badges Section */}
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <Star className="h-6 w-6 fill-yellow-500 text-yellow-500" />
-                  <h3 className="text-xl font-bold text-white">Gold Badges</h3>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {badgesData.gold.map((badge, i) => (
-                    <Card key={i} className="bg-gray-800/50 border-purple-500/20">
-                      <CardContent className="pt-4">
-                        <div className="flex gap-3 items-start">
-                          <div className={`p-2 rounded-full ${badge.earned ? 'bg-yellow-500/20' : 'bg-gray-700/20'}`}>
-                            <badge.icon className={`h-5 w-5 ${badge.earned ? 'text-yellow-500' : 'text-gray-400'}`} />
-                          </div>
-                          <div className="flex-1 space-y-1.5">
-                            <div className="flex items-center gap-2">
-                              <h4 className="font-semibold text-sm text-white">{badge.name}</h4>
-                              {badge.earned && <CheckCircle2 className="h-3 w-3 text-green-500" />}
-                            </div>
-                            <p className="text-xs text-gray-400">{badge.description}</p>
-                            <div className="space-y-1">
-                              <div className="h-1.5 rounded-full bg-gray-700">
-                                <div 
-                                  className={`h-full rounded-full ${badge.earned ? 'bg-yellow-500' : 'bg-gray-500'}`}
-                                  style={{ width: `${badge.progress}%` }}
-                                />
-                              </div>
-                              <p className="text-[10px] text-gray-400">{badge.progress}% completed</p>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-  
-              {/* Silver Badges Section */}
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <Star className="h-6 w-6 fill-gray-400 text-gray-400" />
-                  <h3 className="text-xl font-bold text-white">Silver Badges</h3>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {badgesData.silver.map((badge, i) => (
-                    <Card key={i} className="bg-gray-800/50 border-purple-500/20">
-                      <CardContent className="pt-4">
-                        <div className="flex gap-3 items-start">
-                          <div className={`p-2 rounded-full ${badge.earned ? 'bg-gray-400/20' : 'bg-gray-700/20'}`}>
-                            <badge.icon className={`h-5 w-5 ${badge.earned ? 'text-gray-400' : 'text-gray-500'}`} />
-                          </div>
-                          <div className="flex-1 space-y-1.5">
-                            <div className="flex items-center gap-2">
-                              <h4 className="font-semibold text-sm text-white">{badge.name}</h4>
-                              {badge.earned && <CheckCircle2 className="h-3 w-3 text-green-500" />}
-                            </div>
-                            <p className="text-xs text-gray-400">{badge.description}</p>
-                            <div className="space-y-1">
-                              <div className="h-1.5 rounded-full bg-gray-700">
-                                <div 
-                                  className={`h-full rounded-full ${badge.earned ? 'bg-gray-400' : 'bg-gray-500'}`}
-                                  style={{ width: `${badge.progress}%` }}
-                                />
-                              </div>
-                              <p className="text-[10px] text-gray-400">{badge.progress}% completed</p>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
+              <BadgesSection 
+                badges={authUser.badges.gold} 
+                type="Gold" 
+                icon={Star} 
+                color="yellow-500" 
+              />
+              <BadgesSection 
+                badges={authUser.badges.silver} 
+                type="Silver" 
+                icon={Star} 
+                color="gray-400" 
+              />
             </div>
           </TabsContent>
         </Tabs>

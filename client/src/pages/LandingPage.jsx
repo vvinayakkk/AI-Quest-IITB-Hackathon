@@ -3,6 +3,7 @@ import { Users, MessageCircle, Award, Search, Github, BookOpen, ChevronRight, St
 import BackgroundAnimation from '@/components/BackgroundAnimation';
 import AnimatedCounter from '@/components/AnimatedCounter';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 // Blog posts data
 const blogPosts = [
@@ -186,10 +187,19 @@ const ReviewCarousel = ({ reviews }) => {
 const LandingPage3 = () => {
   const [isVisible, setIsVisible] = useState(false);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
     setIsVisible(true);
   }, []);
+
+  const handleAuthAction = () => {
+    if (user) {
+      navigate('/home');
+    } else {
+      navigate('/login');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white">
@@ -205,8 +215,11 @@ const LandingPage3 = () => {
               </span>
             </div>
             <div className="flex items-center">
-              <button className="px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:scale-105 transition-all duration-300 shadow-lg shadow-indigo-500/25">
-                Already Signed In
+              <button 
+                onClick={handleAuthAction}
+                className="px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:scale-105 transition-all duration-300 shadow-lg shadow-indigo-500/25"
+              >
+                {user ? 'Go to Dashboard' : 'Sign In'}
               </button>
             </div>
           </div>
@@ -224,8 +237,10 @@ const LandingPage3 = () => {
               Harness the power of AI to transform your team's knowledge sharing
             </p>
             <div className="flex justify-center space-x-4">
-              <button className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg hover:scale-105 transition-all duration-300 shadow-lg shadow-indigo-500/25 flex items-center group"
-              onClick={() => navigate('/signup')}>
+              <button 
+                className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg hover:scale-105 transition-all duration-300 shadow-lg shadow-indigo-500/25 flex items-center group"
+                onClick={handleAuthAction}
+              >
                 Get Started
                 <ChevronRight className="ml-2 transform group-hover:translate-x-1 transition-transform" />
               </button>

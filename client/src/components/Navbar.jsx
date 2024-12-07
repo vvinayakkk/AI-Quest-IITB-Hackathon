@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { UserProfileButton } from './UserProfileButton';
-import { useUser } from "@clerk/clerk-react";
+import { useAuth } from '../contexts/AuthContext';  // Updated import
 import { Button } from './ui/button';
 import { SearchBar } from './search/SearchBar';
 import { NavigationLink, navigationItems } from './navigation/NavigationItems';
@@ -14,8 +14,12 @@ const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
-  const { isSignedIn } = useUser();
+  const { user, logout } = useAuth();
   const [notificationCount] = useState(4);
+
+  const handleLogout = () => {
+    logout();
+  };
 
   return (
     <>
@@ -51,10 +55,12 @@ const Navbar = () => {
               Ask a Question
             </Button>
             <NotificationDropdown count={notificationCount} />
-            {isSignedIn ? (
-              <UserProfileButton />
+            {user ? (
+              <div className="flex items-center space-x-4">
+                <UserProfileButton user={user} onLogout={handleLogout} />
+              </div>
             ) : (
-              <a href="/sign-in" className="text-sm font-medium text-primary hover:text-accent transition">
+              <a href="/login" className="text-sm font-medium text-primary hover:text-accent transition">
                 Sign In
               </a>
             )}
@@ -75,7 +81,8 @@ const Navbar = () => {
         <MobileMenu
           isOpen={isMobileMenuOpen}
           notificationCount={notificationCount}
-          isSignedIn={isSignedIn}
+          isSignedIn={!!user}
+          onLogout={handleLogout}
         />
       </nav>
 
