@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import bodyParser from "body-parser";
 import morgan from "morgan";
 import cors from "cors";
-import {authRouter} from "./routes/index.js";
+import {authRouter,userRouter} from "./routes/index.js";
 
 dotenv.config(); 
 
@@ -21,7 +21,7 @@ app.use(morgan("dev"));
 // Routes
 
 app.use("/auth", authRouter);
-
+app.use('/user',userRouter);
 // Connect to MongoDB
 mongoose
   .connect(process.env.MONGO_URI)
