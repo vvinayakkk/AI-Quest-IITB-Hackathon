@@ -1,9 +1,12 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/users.js"; // Import User model
+import dotenv from "dotenv";
+dotenv.config();
+
+const JWT_SECRET = process.env.JWT_SECRET; // Replace with a secure key in production
 
 
-const JWT_SECRET = "your_jwt_secret_key"; // Replace with a secure key in production
 
 // Signup Controller
 export const signup = async (req, res) => {

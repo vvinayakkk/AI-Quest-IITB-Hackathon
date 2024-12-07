@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import morgan from "morgan";
 import cors from "cors";
+import verifyJWT from "./middleware/jwtVerify.js";
 import { authRouter, postRouter, userRouter } from "./routes/index.js";
 
 dotenv.config();
@@ -19,18 +20,20 @@ app.use(
 
 app.use(express.json({ limit: "30mb" }));
 app.use(morgan("dev"));
-// Routes
+
 
 app.use("/auth", authRouter);
+
+app.use(verifyJWT);
+
 app.use("/user", userRouter);
 app.use("/post", postRouter);
 
-// Connect to MongoDB
+
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("Connected to MongoDB");
-    // Start the server
     app.listen(PORT, () => {
       console.log(`Server is running on ${PORT}`);
     });
@@ -39,7 +42,7 @@ mongoose
     console.error("Error connecting to MongoDB:", error.message);
   });
 
-// Default route
+
 app.get("/", (req, res) => {
   res.send("Welcome to the User Posts API!");
 });

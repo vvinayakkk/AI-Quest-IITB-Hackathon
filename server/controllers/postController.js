@@ -1,4 +1,5 @@
 import Post from "../models/post.js";
+import Users from "../models/users.js";
 
 const findPostById = async (id) => {
   const post = await Post.findById(id).populate("author", "name avatar").populate({
@@ -13,30 +14,60 @@ const findPostById = async (id) => {
 
 const createPost = async (req, res) => {
   try {
-    const { title, content, tags, images } = req.body;
-    const formattedImages =
-      images?.map((image) => ({
-        id: Date.now().toString(), // or any unique id generation logic
-        data: image.data, // base64 data from form
-      })) || [];
+  
+    const { 
+      title, 
+      content, 
+      tags = [], 
+      images = [] 
+    } = req.body;
+
+    if (!title || !content) {
+      return res.status(400).json({
+        success: false,
+        message: "Title and content are required"
+      });
+    }
+
+    const processedImages = images.map(image => ({
+      id: `img_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      data: image.data, // Assuming base64 encoded image data
+      url: image.url || null // Optional URL if image is already uploaded
+    }));
+
+    console.log(req.user);
+    
 
     const post = await Post.create({
       title,
       content,
       tags,
-      images: formattedImages,
-      author: req.user._id,
+      images: processedImages,
+      author: req.user.id, 
+      createdAt: new Date(),
+      updatedAt: new Date()
     });
 
-    await post.populate("author", "name avatar");
+    await post.populate({
+      path: 'author',
+      select: 'firstName lastName avatar email' // Select specific user fields
+    });
+
+    const user = await Users.findById(req.user.id);
+    user.posts.push(post._id);
+    await user.save();
+
     res.status(201).json({
       success: true,
-      data: post,
+      data: post
     });
+
   } catch (error) {
-    res.status(400).json({
+    console.error('Post creation error:', error);
+    res.status(500).json({
       success: false,
-      message: error.message,
+      message: error.message || "Failed to create post",
+      error: process.env.NODE_ENV === 'development' ? error.stack : {}
     });
   }
 };

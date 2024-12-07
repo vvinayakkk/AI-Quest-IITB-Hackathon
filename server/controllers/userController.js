@@ -1,7 +1,9 @@
 import Users from '../models/users.js';
 import jwt from 'jsonwebtoken';
+import dotenv from "dotenv";
+dotenv.config();
 
-const JWT_SECRET = "your_jwt_secret_key";
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export const getUserProfile = async (req, res) => {
   try {

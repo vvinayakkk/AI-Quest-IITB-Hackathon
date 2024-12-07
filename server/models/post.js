@@ -22,30 +22,38 @@ const postSchema = new mongoose.Schema({
     }
   },
   images: [{
-    id: String,
+    id: { 
+      type: String, 
+      required: true 
+    },
     data: {
       type: String,
       required: true
+    },
+    uploadedAt: {
+      type: Date,
+      default: Date.now
     }
   }],
   author: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+    ref: 'Users',  // Updated to match model name
+    required: [true, 'Post must have an author']
   },
   likes: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'Users'
   }],
   comments: [{
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: 'Users',
       required: true
     },
     content: {
       type: String,
-      required: true
+      required: [true, 'Comment content is required'],
+      trim: true
     },
     createdAt: {
       type: Date,
@@ -54,10 +62,13 @@ const postSchema = new mongoose.Schema({
   }],
   views: {
     type: Number,
-    default: 0
+    default: 0,
+    min: [0, 'Views cannot be negative']
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
 
 const Posts = mongoose.model('posts', postSchema);

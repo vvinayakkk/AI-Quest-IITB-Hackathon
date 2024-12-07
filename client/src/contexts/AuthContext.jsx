@@ -7,7 +7,7 @@ const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
 const AuthContext = createContext();
 
-// Add axios interceptor with error handling
+// Axios interceptor with more comprehensive error handling
 axios.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -16,7 +16,17 @@ axios.interceptors.request.use(
     }
     return config;
   },
+  (error) => Promise.reject(error)
+);
+
+axios.interceptors.response.use(
+  (response) => response,
   (error) => {
+    // Automatically logout on 401 (Unauthorized) or 403 (Forbidden) errors
+    if (error.response && [401, 403].includes(error.response.status)) {
+      localStorage.removeItem('token');
+      window.location.href = '/login'; // Force redirect
+    }
     return Promise.reject(error);
   }
 );
@@ -28,11 +38,13 @@ export function AuthProvider({ children }) {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
+  // Enhanced token validation
   const isTokenValid = (token) => {
     if (!token) return false;
     try {
       const decoded = jwtDecode(token);
-      return decoded.exp * 1000 > Date.now();
+      // Add buffer time (e.g., 5 minutes) before actual expiration
+      return decoded.exp * 1000 > Date.now() + 5 * 60 * 1000;
     } catch (error) {
       return false;
     }
@@ -50,12 +62,14 @@ export function AuthProvider({ children }) {
         } else {
           localStorage.removeItem('token');
           setUser(null);
+          setIsLoggedIn(false);
         }
       } catch (error) {
         console.error('Auth check failed:', error);
         setError(error.response?.data?.message || 'Authentication failed');
         localStorage.removeItem('token');
         setUser(null);
+        setIsLoggedIn(false);
       } finally {
         setIsLoading(false);
       }
@@ -75,6 +89,7 @@ export function AuthProvider({ children }) {
       const userData = profileResponse.data;
       setUser(userData);
       setIsLoggedIn(true);
+      navigate('/dashboard'); // Optional: redirect after login
       return userData;
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Login failed';
@@ -94,6 +109,7 @@ export function AuthProvider({ children }) {
       const newUser = profileResponse.data;
       setUser(newUser);
       setIsLoggedIn(true);
+      navigate('/onboarding'); // Optional: redirect to onboarding
       return newUser;
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Registration failed';
@@ -102,9 +118,30 @@ export function AuthProvider({ children }) {
     }
   };
 
+  // New method to update user profile
+  const updateProfile = async (profileData) => {
+    try {
+      const response = await axios.put(`${SERVER_URL}/user/profile`, profileData);
+      setUser(response.data);
+      return response.data;
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 'Profile update failed';
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    }
+  };
+
   const logout = () => {
+    // Optional: Call backend logout endpoint if needed
+    try {
+      axios.post(`${SERVER_URL}/auth/logout`);
+    } catch (error) {
+      console.error('Logout backend call failed', error);
+    }
+
     setUser(null);
     setError(null);
+    setIsLoggedIn(false);
     localStorage.removeItem('token');
     navigate('/login');
   };
@@ -116,10 +153,12 @@ export function AuthProvider({ children }) {
       value={{
         user,
         isLoading,
+        isloggedIn,
         error,
         login,
         logout,
         register,
+        updateProfile,
         clearError
       }}
     >
