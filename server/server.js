@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import morgan from "morgan";
 import cors from "cors";
-import { authRouter, userRouter } from "./routes/index.js";
+import { authRouter, postRouter, userRouter } from "./routes/index.js";
 
 dotenv.config();
 
@@ -23,8 +23,9 @@ app.use(morgan("dev"));
 
 app.use("/auth", authRouter);
 app.use("/user", userRouter);
-// Connect to MongoDB
+app.use("/post", postRouter);
 
+// Connect to MongoDB
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
