@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Award, BookMarked, CheckCircle2, MessageSquare, Star, Trophy, Users2, Plus, X 
+import {
+  Award, BookMarked, CheckCircle2, MessageSquare, Star, Trophy, Users2, Plus, X
 } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -11,26 +11,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 
 import { Bar, BarChart, Line, LineChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
 import { useAuth } from '../contexts/AuthContext';
 
-const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
 const activityData = [
-    { name: "Jan 2024", questions: 40, answers: 24 },
-    { name: "Feb 2024", questions: 35, answers: 38 },
-    { name: "Mar 2024", questions: 27, answers: 34 },
-    { name: "Apr 2024", questions: 18, answers: 29 },
-    { name: "May 2024", questions: 23, answers: 41 },
-    { name: "Jun 2024", questions: 35, answers: 28 },
-    { name: "Jul 2024", questions: 30, answers: 35 },
-    { name: "Aug 2024", questions: 25, answers: 32 },
-    { name: "Sep 2024", questions: 32, answers: 38 },
-    { name: "Oct 2024", questions: 28, answers: 30 },
-    { name: "Nov 2024", questions: 22, answers: 25 },
+  { name: "Jan 2024", questions: 40, answers: 24 },
+  { name: "Feb 2024", questions: 35, answers: 38 },
+  { name: "Mar 2024", questions: 27, answers: 34 },
+  { name: "Apr 2024", questions: 18, answers: 29 },
+  { name: "May 2024", questions: 23, answers: 41 },
+  { name: "Jun 2024", questions: 35, answers: 28 },
+  { name: "Jul 2024", questions: 30, answers: 35 },
+  { name: "Aug 2024", questions: 25, answers: 32 },
+  { name: "Sep 2024", questions: 32, answers: 38 },
+  { name: "Oct 2024", questions: 28, answers: 30 },
+  { name: "Nov 2024", questions: 22, answers: 25 },
 ]
 
 const reputationData = [
@@ -103,34 +100,11 @@ const sampleUser = {
 };
 
 export default function ProfilePage() {
-  const { user: authUser, logout } = useAuth();
-  const [isPostModalOpen, setIsPostModalOpen] = useState(false);
-  const [newPost, setNewPost] = useState({
-    title: '',
-    content: '',
-    tags: ''
-  });
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
-  const handleCreatePost = async (e) => {
-    e.preventDefault();
-    try {
-      await axios.post(`${SERVER_URL}/posts`, newPost);
-      setNewPost({ title: '', content: '', tags: '' });
-      setIsPostModalOpen(false);
-    } catch (error) {
-      console.error('Error creating post', error);
-    }
-  };
+  const { user: authUser } = useAuth();
 
   if (!authUser) {
     return (
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         className="flex justify-center items-center min-h-screen bg-gray-900 text-white"
@@ -208,7 +182,7 @@ export default function ProfilePage() {
                   <p className="text-xs text-gray-400">{badge.description}</p>
                   <div className="space-y-1">
                     <div className="h-1.5 rounded-full bg-gray-700">
-                      <div 
+                      <div
                         className={`h-full rounded-full ${badge.earned ? `bg-${color}` : 'bg-gray-500'}`}
                         style={{ width: `${badge.progress}%` }}
                       />
@@ -224,68 +198,15 @@ export default function ProfilePage() {
     </div>
   );
 
-  return (        
-    <motion.div 
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    transition={{ duration: 0.5 }}
-    className="flex flex-col gap-6 p-6 bg-gray-900 min-h-screen"
-  >
-      {/* Sidebar */}
-      <div className="sidebar">
-        <div className="sidebar-header">
-          <div className="avatar">
-            <span className="initials">{authUser.firstName?.charAt(0)}{authUser.lastName?.charAt(0)}</span>
-          </div>
-          <div className="user-info">
-            <h3>{authUser.firstName} {authUser.lastName}</h3>
-            <p>{authUser.role || "Member"}</p>
-          </div>
-        </div>
-        <nav className="sidebar-nav">
-          <ul>
-            <li>
-              <a href="#" className="active">
-                <i className="icon-home"></i>
-                <span>Topics</span>
-              </a>
-            </li>
-            <li>
-              <a href="#">
-                <i className="icon-file"></i>
-                <span>My Posts</span>
-              </a>
-            </li>
-            <li>
-              <a href="#">
-                <i className="icon-category"></i>
-                <span>Categories</span>
-              </a>
-            </li>
-            <li>
-              <a href="#">
-                <i className="icon-tag"></i>
-                <span>Tags</span>
-              </a>
-            </li>
-            <li>
-              <a href="#">
-                <i className="icon-bookmark"></i>
-                <span>Bookmarks</span>
-              </a>
-            </li>
-          </ul>
-        </nav>
-        <div className="sidebar-footer">
-          <div className="genie-bot">
-            <i className="icon-robot"></i>
-            <span>Genie Bot AI Assistant</span>
-          </div>
-        </div>
-      </div>
-
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="flex flex-col gap-6 p-6 bg-gray-900 min-h-screen"
+    >
       {/* Main Content */}
-      <div className="flex-1">
+      <div className="flex flex-col ml-[330px]">
         {/* Profile Header */}
         <div className="flex flex-col md:flex-row gap-6 items-start">
           {/* Profile Card */}
@@ -306,7 +227,7 @@ export default function ProfilePage() {
                 </motion.div>
 
                 {/* User Info */}
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
@@ -335,21 +256,14 @@ export default function ProfilePage() {
                 </motion.div>
 
                 {/* Action Buttons */}
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 }}
                   className="flex gap-2"
                 >
-                  <Button 
-                    variant="outline" 
-                    className="border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-white"
-                    onClick={handleLogout}
-                  >
-                    Logout
-                  </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-white"
                   >
                     Edit Profile
@@ -364,178 +278,116 @@ export default function ProfilePage() {
         </div>
 
         {/* Detailed Analytics */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
           <Tabs defaultValue="activity" className="w-full">
-            <TabsList className="bg-gray-800 border-purple-500/20 p-1">
-              <TabsTrigger 
-                value="activity" 
+            <TabsList className="bg-gray-800 border-purple-500/20 p-1 mt-4">
+              <TabsTrigger
+                value="activity"
                 className="text-white data-[state=active]:bg-purple-500 data-[state=active]:text-white"
               >
                 Activity
               </TabsTrigger>
-              <TabsTrigger 
-                value="reputation" 
+              <TabsTrigger
+                value="reputation"
                 className="text-white data-[state=active]:bg-purple-500 data-[state=active]:text-white"
               >
                 Reputation
               </TabsTrigger>
-              <TabsTrigger 
-                value="badges" 
+              <TabsTrigger
+                value="badges"
                 className="text-white data-[state=active]:bg-purple-500 data-[state=active]:text-white"
               >
                 Badges
               </TabsTrigger>
             </TabsList>
-            
+
             {/* Activity Tab Content */}
             <TabsContent value="activity" className="mt-6">
               <Card className="bg-gray-800 border-purple-500/20 shadow-lg">
                 <CardHeader>
-                <CardTitle className="text-white">Questions & Answers Activity</CardTitle>
-                <CardDescription className="text-gray-400">
-                  Your activity over the last 6 months
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-4">
-                <ResponsiveContainer width="100%" height={350}>
-                  <BarChart data={activityData}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-gray-700" />
-                    <XAxis dataKey="name" stroke="#fff" />
-                    <YAxis stroke="#fff" />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'rgb(31, 41, 55)',
-                        color: 'white',
-                        border: '1px solid rgb(107, 114, 128)'
-                      }} 
-                    />
-                    <Bar dataKey="questions" fill="rgb(124, 58, 237)" />
-                    <Bar dataKey="answers" fill="rgb(249, 115, 22)" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </TabsContent>
-  
-          {/* Reputation Tab Content */}
-          <TabsContent value="reputation" className="mt-6">
-            <Card className="bg-gray-800 border-purple-500/20 shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-white">Reputation Growth</CardTitle>
-                <CardDescription className="text-gray-400">
-                  Your reputation changes over the last week
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={350}>
-                  <LineChart data={reputationData}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-gray-700" />
-                    <XAxis dataKey="name" stroke="#fff" />
-                    <YAxis stroke="#fff" />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'rgb(31, 41, 55)',
-                        color: 'white',
-                        border: '1px solid rgb(107, 114, 128)'
-                      }} 
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="value" 
-                      stroke="rgb(124, 58, 237)" 
-                      strokeWidth={2}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </TabsContent>
-  
-          {/* Badges Tab Content */}
-          <TabsContent value="badges" className="mt-6">
-            <div className="grid gap-6">
-              <BadgesSection 
-                badges={authUser.badges.gold} 
-                type="Gold" 
-                icon={Star} 
-                color="yellow-500" 
-              />
-              <BadgesSection 
-                badges={authUser.badges.silver} 
-                type="Silver" 
-                icon={Star} 
-                color="gray-400" 
-              />
-            </div>
-          </TabsContent>
-        </Tabs>
-      </motion.div>
-  
-      {/* Add Post Button */}
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={() => setIsPostModalOpen(true)}
-        className="fixed bottom-6 right-6 bg-purple-500 text-white p-4 rounded-full shadow-lg hover:bg-purple-600 z-50"
-      >
-        <Plus className="h-6 w-6" />
-      </motion.button>
-  
-      <AnimatePresence>
-        {isPostModalOpen && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4"
-          >
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              className="bg-gray-800 rounded-lg p-6 w-full max-w-md"
-            >
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-white">Create a New Post</h2>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => setIsPostModalOpen(false)}
-                >
-                  <X className="h-6 w-6 text-white" />
-                </Button>
+                  <CardTitle className="text-white">Questions & Answers Activity</CardTitle>
+                  <CardDescription className="text-gray-400">
+                    Your activity over the last 6 months
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-4">
+                  <ResponsiveContainer width="100%" height={350}>
+                    <BarChart data={activityData}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-gray-700" />
+                      <XAxis dataKey="name" stroke="#fff" />
+                      <YAxis stroke="#fff" />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'rgb(31, 41, 55)',
+                          color: 'white',
+                          border: '1px solid rgb(107, 114, 128)'
+                        }}
+                      />
+                      <Bar dataKey="questions" fill="rgb(124, 58, 237)" />
+                      <Bar dataKey="answers" fill="rgb(249, 115, 22)" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Reputation Tab Content */}
+            <TabsContent value="reputation" className="mt-6">
+              <Card className="bg-gray-800 border-purple-500/20 shadow-lg">
+                <CardHeader>
+                  <CardTitle className="text-white">Reputation Growth</CardTitle>
+                  <CardDescription className="text-gray-400">
+                    Your reputation changes over the last week
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={350}>
+                    <LineChart data={reputationData}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-gray-700" />
+                      <XAxis dataKey="name" stroke="#fff" />
+                      <YAxis stroke="#fff" />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'rgb(31, 41, 55)',
+                          color: 'white',
+                          border: '1px solid rgb(107, 114, 128)'
+                        }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="value"
+                        stroke="rgb(124, 58, 237)"
+                        strokeWidth={2}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Badges Tab Content */}
+            <TabsContent value="badges" className="mt-6">
+              <div className="grid gap-6">
+                <BadgesSection
+                  badges={authUser.badges.gold}
+                  type="Gold"
+                  icon={Star}
+                  color="yellow-500"
+                />
+                <BadgesSection
+                  badges={authUser.badges.silver}
+                  type="Silver"
+                  icon={Star}
+                  color="gray-400"
+                />
               </div>
-              <form onSubmit={handleCreatePost} className="space-y-4">
-                <Input 
-                  placeholder="Post Title" 
-                  value={newPost.title}
-                  onChange={(e) => setNewPost({...newPost, title: e.target.value})}
-                  required 
-                />
-                <Textarea 
-                  placeholder="What's on your mind?" 
-                  value={newPost.content}
-                  onChange={(e) => setNewPost({...newPost, content: e.target.value})}
-                  required 
-                  rows={4}
-                />
-                <Input 
-                  placeholder="Tags (comma-separated)" 
-                  value={newPost.tags}
-                  onChange={(e) => setNewPost({...newPost, tags: e.target.value})}
-                />
-                <Button type="submit" className="w-full bg-purple-500 hover:bg-purple-600">
-                  Publish Post
-                </Button>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </TabsContent>
+          </Tabs>
+        </motion.div>
       </div>
     </motion.div>
   );

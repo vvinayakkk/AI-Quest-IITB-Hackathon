@@ -184,7 +184,7 @@ const ReviewCarousel = ({ reviews }) => {
   );
 };
 
-const LandingPage3 = () => {
+const LandingPage = () => {
   const [isVisible, setIsVisible] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -388,4 +388,4 @@ const LandingPage3 = () => {
   );
 };
 
-export default LandingPage3;
+export default LandingPage;

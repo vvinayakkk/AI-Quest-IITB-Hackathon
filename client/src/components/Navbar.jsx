@@ -48,12 +48,6 @@ const Navbar = () => {
             {navigationItems.map((item, index) => (
               <NavigationLink key={index} {...item} />
             ))}
-            <Button onClick={() => setIsOpen(true)} className="bg-accent hover:bg-secondary text-white flex items-center">
-              <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              Ask a Question
-            </Button>
             <NotificationDropdown count={notificationCount} />
             {user ? (
               <div className="flex items-center space-x-4">

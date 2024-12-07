@@ -7,7 +7,7 @@ import MainLayout from './layout/MainLayout';
 import AskQuestion from '@/pages/AskQuestion';
 import CategoriesPage from './pages/CategoriesPage';
 import Home from './pages/Home';
-import LandingPage3 from './pages/LandingPage';
+import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
 import NotificationsPage from './pages/NotificationPage';
 import PostDetail from './pages/PostDetail';
@@ -45,7 +45,7 @@ const App = () => {
         <Toaster position="bottom-right" richColors />
         <Routes>
           {/* Routes without Layout */}
-          <Route path="/" element={<LandingPage3 />} />
+          <Route path="/" element={<LandingPage />} />
           <Route path="/signup" element={<Register />} />
           <Route path="/login" element={<Login />} />
 

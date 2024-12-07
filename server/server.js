@@ -1,27 +1,28 @@
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import bodyParser from "body-parser";
 import morgan from "morgan";
 import cors from "cors";
-import {authRouter,userRouter} from "./routes/index.js";
+import { authRouter, userRouter } from "./routes/index.js";
 
-dotenv.config(); 
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT;
 
 // Middleware
-app.use(cors({
-  origin: "*",
-}));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(
+  cors({
+    origin: "*",
+  })
+);
+
+app.use(express.json({ limit: "30mb" }));
 app.use(morgan("dev"));
 // Routes
 
 app.use("/auth", authRouter);
-app.use('/user',userRouter);
+app.use("/user", userRouter);
 // Connect to MongoDB
 
 mongoose
