@@ -2,19 +2,25 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import bodyParser from "body-parser";
-import userRoutes from "./routes/users.js"; // Assuming routes are in a "routes" folder
+import morgan from "morgan";
+import cors from "cors";
+import {authRouter} from "./routes/index.js";
 
-dotenv.config(); // Load environment variables
+dotenv.config(); 
 
 const app = express();
 const PORT = process.env.PORT;
 
 // Middleware
+app.use(cors({
+  origin: "*",
+}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
+app.use(morgan("dev"));
 // Routes
-app.use("/", userRoutes);
+
+app.use("/auth", authRouter);
 
 // Connect to MongoDB
 mongoose

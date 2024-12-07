@@ -55,11 +55,11 @@ const App = () => {
       <Routes>
         {/* Routes without Layout */}
         <Route path="/" element={<LandingPage3 />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/signup" element={<Register />} />
         <Route path="/login" element={<Login />} />
 
         {/* Routes with Layout */}
-        <Route element={<ProtectedRoute />}>
+        {/* <Route element={<ProtectedRoute />}> */}
           <Route element={<MainLayout />}>
             <Route path="/home" element={<Home />} />
             <Route path="/post/:id" element={<PostDetail />} /> {/* Add :id parameter */}
@@ -69,7 +69,7 @@ const App = () => {
             <Route path="/notif" element={<NotificationsPage />} />
             <Route path="/categories" element={<CategoriesPage />} />
           </Route>
-        </Route>
+        {/* </Route> */}
       </Routes>
     </div>
   );
