@@ -10,15 +10,15 @@ import {
   deleteComment,
 } from "../controllers/postController.js";
 
-const router = express.Router();
+const postRouter = express.Router();
 
-router.get("/", getPosts);
-router.get("/:id", getPost);
-router.post("/new", createPost);
-router.put("/:id/update", updatePost);
-router.put("/:id/delete", deletePost);
-router.post("/:id/like", toggleLike);
-router.post("/:id/comment", addComment);
-router.delete("/:id/comments/:commentId", deleteComment);
+postRouter.get("/", getPosts);
+postRouter.get("/:id", getPost);
+postRouter.post("/new", createPost);
+postRouter.put("/:id/update", updatePost);
+postRouter.put("/:id/delete", deletePost);
+postRouter.post("/:id/like", toggleLike);
+postRouter.post("/:id/comment", addComment);
+postRouter.delete("/:id/comments/:commentId", deleteComment);
 
-export default router;
+export default postRouter;

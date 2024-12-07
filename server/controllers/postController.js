@@ -73,30 +73,31 @@ const createPost = async (req, res) => {
 };
 
 const getPosts = async (req, res) => {
-  const { page = 1, limit = 10, search, tag, category } = req.query;
-  const query = {};
-  if (search) query.$text = { $search: search };
-  if (tag) query.tags = tag;
-  if (category) query.category = category;
+  try {
+    const { search = '' } = req.query;
 
-  const posts = await Post.find(query)
-    .populate("author", "name avatar")
-    .sort({ createdAt: -1 })
-    .limit(limit * 1)
-    .skip((page - 1) * limit);
+    // Construct query for search
+    const query = search 
+      ? { $text: { $search: search } } 
+      : {};
 
-  const count = await Post.countDocuments(query);
+    // Fetch posts
+    const posts = await Post.find(query)
+      .populate("author", "name avatar")
+      .sort({ createdAt: -1 });
 
-  res.json({
-    success: true,
-    data: posts,
-    pagination: {
-      total: count,
-      pages: Math.ceil(count / limit),
-      current: page,
-      perPage: limit,
-    },
-  });
+    res.json({
+      success: true,
+      data: posts
+    });
+  } catch (error) {
+    console.error('Error fetching posts:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch posts',
+      error: process.env.NODE_ENV === 'development' ? error.message : {}
+    });
+  }
 };
 
 const getPost = async (req, res) => {
