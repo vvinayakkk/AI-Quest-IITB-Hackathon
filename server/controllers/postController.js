@@ -1,11 +1,14 @@
 import Post from "../models/post.js";
-import Users from "../models/users.js";
+import mongoose from 'mongoose';
 
 const findPostById = async (id) => {
-  const post = await Post.findById(id).populate("author", "name avatar").populate({
-    path: "comments.user",
-    select: "name avatar",
-  });
+  const post = await Post.findById(id)
+    .populate("author", "firstName lastName avatar email")
+    .populate({
+      path: "comments.user",
+      select: "firstName lastName avatar email"
+    });
+  
   if (!post) {
     throw new Error("Post not found");
   }
@@ -14,7 +17,8 @@ const findPostById = async (id) => {
 
 const createPost = async (req, res) => {
   try {
-  
+    const userId = req.user.id; // Authenticated user ID from JWT
+
     const { 
       title, 
       content, 
@@ -22,6 +26,7 @@ const createPost = async (req, res) => {
       images = [] 
     } = req.body;
 
+    // Validate required fields
     if (!title || !content) {
       return res.status(400).json({
         success: false,
@@ -29,33 +34,30 @@ const createPost = async (req, res) => {
       });
     }
 
+    // Process images with base64 or URL support
     const processedImages = images.map(image => ({
       id: `img_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      data: image.data, // Assuming base64 encoded image data
-      url: image.url || null // Optional URL if image is already uploaded
+      data: image.data || null,
+      url: image.url || null,
+      uploadedAt: new Date()
     }));
-
-    console.log(req.user);
-    
 
     const post = await Post.create({
       title,
       content,
       tags,
       images: processedImages,
-      author: req.user.id, 
-      createdAt: new Date(),
-      updatedAt: new Date()
+      author: userId,
+      likes: [],
+      comments: [],
+      views: 0
     });
 
+    // Populate author details
     await post.populate({
       path: 'author',
-      select: 'firstName lastName avatar email' // Select specific user fields
+      select: 'firstName lastName avatar email'
     });
-
-    const user = await Users.findById(req.user.id);
-    user.posts.push(post._id);
-    await user.save();
 
     res.status(201).json({
       success: true,
@@ -74,21 +76,39 @@ const createPost = async (req, res) => {
 
 const getPosts = async (req, res) => {
   try {
-    const { search = '' } = req.query;
+    const { search = '', page = 1, limit = 10 } = req.query;
 
     // Construct query for search
     const query = search 
-      ? { $text: { $search: search } } 
+      ? { 
+          $or: [
+            { title: { $regex: search, $options: 'i' } },
+            { content: { $regex: search, $options: 'i' } },
+            { tags: { $regex: search, $options: 'i' } }
+          ]
+        }
       : {};
 
-    // Fetch posts
-    const posts = await Post.find(query)
-      .populate("author", "name avatar")
-      .sort({ createdAt: -1 });
+    // Fetch paginated posts
+    const options = {
+      page: parseInt(page),
+      limit: parseInt(limit),
+      populate: { path: 'author', select: 'firstName lastName avatar email' },
+      sort: { createdAt: -1 }
+    };
+
+    const result = await Post.paginate(query, options);
 
     res.json({
       success: true,
-      data: posts
+      data: result.docs,
+      pagination: {
+        totalDocs: result.totalDocs,
+        totalPages: result.totalPages,
+        currentPage: result.page,
+        hasNextPage: result.hasNextPage,
+        hasPrevPage: result.hasPrevPage
+      }
     });
   } catch (error) {
     console.error('Error fetching posts:', error);
@@ -100,130 +120,90 @@ const getPosts = async (req, res) => {
   }
 };
 
-const getPost = async (req, res) => {
-  const post = await findPostById(req.params.id);
-  post.views += 1;
-  await post.save();
-  res.json({
-    success: true,
-    data: post,
-  });
-};
-
-const updatePost = async (req, res) => {
+const toggleLike = async (req, res) => {
   try {
-    const { content, tags, images } = req.body;
+    const userId = req.user.id; // Authenticated user ID
     const post = await findPostById(req.params.id);
+    
+    // Check if user has already liked the post
+    const isLiked = post.likes.some(
+      like => like.toString() === userId.toString()
+    );
 
-    if (post.author.toString() !== req.user._id.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: "Not authorized to update this post",
-      });
-    }
-
-    // Update post fields
-    post.content = content;
-    post.tags = tags;
-
-    // Update images if provided
-    if (images) {
-      post.images = images.map((image) => ({
-        id: image.id || Date.now().toString(),
-        data: image.data,
-      }));
+    if (isLiked) {
+      // Remove like
+      post.likes = post.likes.filter(
+        like => like.toString() !== userId.toString()
+      );
+    } else {
+      // Add like
+      post.likes.push(userId);
     }
 
     await post.save();
+
     res.json({
       success: true,
-      data: post,
+      data: {
+        likes: post.likes.length,
+        isLiked: !isLiked
+      }
     });
   } catch (error) {
     res.status(400).json({
       success: false,
-      message: error.message,
+      message: error.message
     });
   }
-};
-
-const deletePost = async (req, res) => {
-  try {
-    const post = await findPostById(req.params.id);
-
-    if (post.author.toString() !== req.user._id.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: "Not authorized to delete this post",
-      });
-    }
-
-    await post.deleteOne();
-    res.json({
-      success: true,
-      message: "Post deleted successfully",
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
-const toggleLike = async (req, res) => {
-  const post = await findPostById(req.params.id);
-  const isLiked = post.likes.includes(req.user._id);
-  if (isLiked) {
-    post.likes = post.likes.filter((id) => id.toString() !== req.user._id.toString());
-  } else {
-    post.likes.push(req.user._id);
-  }
-  await post.save();
-  res.json({
-    success: true,
-    data: {
-      likes: post.likes.length,
-      isLiked: !isLiked,
-    },
-  });
 };
 
 const addComment = async (req, res) => {
-  const { content } = req.body;
-  const post = await findPostById(req.params.id);
-  const comment = {
-    user: req.user._id,
-    content,
-  };
-  post.comments.push(comment);
-  await post.save();
-  await post.populate("comments.user", "name avatar");
-  res.status(201).json({
-    success: true,
-    data: post.comments[post.comments.length - 1],
-  });
-};
+  try {
+    const userId = req.user.id; // Authenticated user ID
+    const { content } = req.body;
 
-const deleteComment = async (req, res) => {
-  const { commentId } = req.params;
-  const post = await findPostById(req.params.id);
-  const comment = post.comments.id(commentId);
-  if (!comment) {
-    throw new Error("Comment not found");
-  }
-  if (comment.user.toString() !== req.user._id.toString()) {
-    return res.status(403).json({
+    if (!content) {
+      return res.status(400).json({
+        success: false,
+        message: "Comment content is required"
+      });
+    }
+
+    const post = await findPostById(req.params.id);
+
+    const newComment = {
+      user: userId,
+      content,
+      createdAt: new Date()
+    };
+
+    post.comments.push(newComment);
+    await post.save();
+
+    // Populate the new comment's user details
+    await post.populate({
+      path: 'comments.user',
+      select: 'firstName lastName avatar email'
+    });
+
+    // Get the last added comment
+    const addedComment = post.comments[post.comments.length - 1];
+
+    res.status(201).json({
+      success: true,
+      data: addedComment
+    });
+  } catch (error) {
+    res.status(400).json({
       success: false,
-      message: "Not authorized to delete this comment",
+      message: error.message
     });
   }
-  comment.deleteOne();
-  await post.save();
-  res.json({
-    success: true,
-    message: "Comment deleted successfully",
-  });
 };
 
-export { createPost, getPosts, getPost, updatePost, deletePost, toggleLike, addComment, deleteComment };
+export { 
+  createPost, 
+  getPosts, 
+  toggleLike, 
+  addComment 
+};

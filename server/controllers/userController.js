@@ -13,7 +13,6 @@ export const getUserProfile = async (req, res) => {
     // Verify and decode the token
     const decoded = jwt.verify(token,JWT_SECRET);
     console.log(decoded);
-    
     // Find user by ID from decoded token
     const user = await Users.findById(decoded.id).select('-password');
     
