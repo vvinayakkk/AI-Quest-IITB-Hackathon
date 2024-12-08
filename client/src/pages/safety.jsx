@@ -1,18 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import { 
-  SearchIcon, 
-  ThumbsUpIcon, 
-  MessageCircleIcon, 
-  SendIcon, 
-  PlusIcon 
-} from 'lucide-react';
+import { SearchIcon, ThumbsUpIcon, MessageCircleIcon, SendIcon , PlusIcon} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { AuthContext,useAuth } from '../context/AuthContext'; // Assume you have an AuthContext
 
-// Comment Section Component
 const CommentSection = ({ postId, comments, onAddComment }) => {
   const [newComment, setNewComment] = useState('');
+  const { user } = useAuth();
 
   const handleSubmitComment = async (e) => {
     e.preventDefault();
@@ -35,39 +29,35 @@ const CommentSection = ({ postId, comments, onAddComment }) => {
       }
     } catch (error) {
       console.error('Failed to add comment:', error);
-      // TODO: Implement proper error handling (e.g., toast notification)
+      // Implement error handling (e.g., toast notification)
     }
   };
 
   return (
     <div className="mt-4 space-y-3">
       <div className="space-y-2">
-        {comments && comments.length > 0 ? (
-          comments.map(comment => (
-            <div key={comment._id} className="flex items-start space-x-2">
-              {comment.user && comment.user.avatar && (
-                <img 
-                  src={comment.user.avatar} 
-                  alt={`${comment.user.firstName} ${comment.user.lastName}`} 
-                  className="w-8 h-8 rounded-full object-cover"
-                />
-              )}
-              <div className="bg-gray-700 rounded-lg px-3 py-2 flex-grow">
-                <p className="text-white font-medium text-sm">
-                  {comment.user 
-                    ? `${comment.user.firstName} ${comment.user.lastName}` 
-                    : 'Unknown User'}
-                </p>
-                <p className="text-gray-300 text-sm">{comment.content}</p>
-                <p className="text-gray-500 text-xs">
-                  {new Date(comment.createdAt).toLocaleString()}
-                </p>
-              </div>
+        {comments.map(comment => (
+          <div key={comment._id} className="flex items-start space-x-2">
+            {comment.user?.avatar && (
+              <img 
+                src={comment.user.avatar} 
+                alt={`${comment.user.firstName} ${comment.user.lastName}`} 
+                className="w-8 h-8 rounded-full object-cover"
+              />
+            )}
+            <div className="bg-gray-700 rounded-lg px-3 py-2">
+              <p className="text-white font-medium text-sm">
+                {comment.user 
+                  ? `${comment.user.firstName} ${comment.user.lastName}` 
+                  : 'Unknown User'}
+              </p>
+              <p className="text-gray-300 text-sm">{comment.content}</p>
+              <p className="text-gray-500 text-xs">
+                {new Date(comment.createdAt).toLocaleString()}
+              </p>
             </div>
-          ))
-        ) : (
-          <p className="text-gray-400 text-center">No comments yet</p>
-        )}
+          </div>
+        ))}
       </div>
 
       <form onSubmit={handleSubmitComment} className="flex items-center space-x-2">
@@ -92,10 +82,10 @@ const CommentSection = ({ postId, comments, onAddComment }) => {
   );
 };
 
-// Individual Post Component
-const HomePost = ({ post, onLikeToggle, onAddComment }) => {
+const HomePost = ({ post, onLikeToggle }) => {
   const [showComments, setShowComments] = useState(false);
   const [localPost, setLocalPost] = useState(post);
+  const { user } = useContext(AuthContext);
 
   const handleLikeToggle = async () => {
     try {
@@ -110,39 +100,29 @@ const HomePost = ({ post, onLikeToggle, onAddComment }) => {
       );
       
       if (response.data.success) {
-        const updatedPost = {
-          ...localPost,
+        setLocalPost(prev => ({
+          ...prev,
           likes: response.data.data.isLiked 
-            ? [...(localPost.likes || []), response.data.data.userId] 
-            : (localPost.likes || []).filter(id => id !== response.data.data.userId)
-        };
-        
-        setLocalPost(updatedPost);
+            ? [...(prev.likes || []), user.id] 
+            : (prev.likes || []).filter(id => id !== user.id)
+        }));
         onLikeToggle?.(post._id, response.data.data);
       }
     } catch (error) {
       console.error('Like toggle failed:', error);
+      // Implement error handling
     }
   };
 
   const handleAddComment = (newComment) => {
-    const updatedPost = {
-      ...localPost,
-      comments: [...(localPost.comments || []), newComment]
-    };
-    
-    setLocalPost(updatedPost);
-    onAddComment?.(post._id, newComment);
+    setLocalPost(prev => ({
+      ...prev,
+      comments: [...(prev.comments || []), newComment]
+    }));
   };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="bg-gray-800 rounded-lg p-4 space-y-3"
-    >
-      {/* Post Header */}
+    <div className="bg-gray-800 rounded-lg p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           {localPost.author?.avatar && (
@@ -165,7 +145,6 @@ const HomePost = ({ post, onLikeToggle, onAddComment }) => {
         </div>
       </div>
 
-      {/* Post Content */}
       <h2 className="text-xl font-bold text-white">{localPost.title}</h2>
       
       {localPost.images && localPost.images.length > 0 && (
@@ -180,7 +159,6 @@ const HomePost = ({ post, onLikeToggle, onAddComment }) => {
 
       <p className="text-gray-300 line-clamp-3">{localPost.content}</p>
 
-      {/* Tags */}
       {localPost.tags && localPost.tags.length > 0 && (
         <div className="flex space-x-2">
           {localPost.tags.map(tag => (
@@ -194,7 +172,6 @@ const HomePost = ({ post, onLikeToggle, onAddComment }) => {
         </div>
       )}
 
-      {/* Post Actions */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <button 
@@ -202,11 +179,7 @@ const HomePost = ({ post, onLikeToggle, onAddComment }) => {
             className="flex items-center space-x-2 text-gray-400 hover:text-white"
           >
             <ThumbsUpIcon 
-              className={
-                localPost.likes?.includes(localPost.author?._id) 
-                  ? 'text-purple-500 fill-current' 
-                  : ''
-              } 
+              className={`${localPost.likes?.includes(user.id) ? 'text-purple-500 fill-current' : ''}`} 
               size={18} 
             />
             <span>{localPost.likes?.length || 0}</span>
@@ -221,7 +194,6 @@ const HomePost = ({ post, onLikeToggle, onAddComment }) => {
         </div>
       </div>
 
-      {/* Comments Section */}
       {showComments && (
         <CommentSection 
           postId={localPost._id} 
@@ -229,30 +201,41 @@ const HomePost = ({ post, onLikeToggle, onAddComment }) => {
           onAddComment={handleAddComment}
         />
       )}
-    </motion.div>
+    </div>
   );
 };
 
-// Main Home Component
 const Home = () => {
-  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [posts, setPosts] = useState([]);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    hasNextPage: false,
+    hasPrevPage: false
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { user } = useContext(AuthContext);
 
-  // Fetch posts from backend with search
-  const fetchPosts = async (search = '') => {
+  // Fetch posts from backend
+  const fetchPosts = async (search = '', page = 1) => {
     try {
       setLoading(true);
       const response = await axios.get('http://localhost:3000/post', {
-        params: { search },
+        params: { search, page },
         headers: { 
           'Authorization': `Bearer ${localStorage.getItem('token')}` 
         }
       });
 
       setPosts(response.data.data || []);
+      setPagination({
+        currentPage: response.data.pagination.currentPage,
+        totalPages: response.data.pagination.totalPages,
+        hasNextPage: response.data.pagination.hasNextPage,
+        hasPrevPage: response.data.pagination.hasPrevPage
+      });
       setLoading(false);
     } catch (err) {
       console.error('Detailed error:', err);
@@ -267,32 +250,27 @@ const Home = () => {
     setPosts(prevPosts => 
       prevPosts.map(post => 
         post._id === postId 
-          ? { 
-              ...post, 
-              likes: likeData.isLiked 
-                ? [...(post.likes || []), likeData.userId] 
-                : (post.likes || []).filter(id => id !== likeData.userId) 
-            }
+          ? { ...post, likes: likeData.isLiked 
+              ? [...(post.likes || []), user.id] 
+              : (post.likes || []).filter(id => id !== user.id) }
           : post
       )
     );
+  }
+
+  const handleNextPage = () => {
+    if (pagination.hasNextPage) {
+      fetchPosts(searchTerm, pagination.currentPage + 1);
+    }
   };
 
-  // Handle adding comment to a post
-  const handleAddComment = (postId, newComment) => {
-    setPosts(prevPosts => 
-      prevPosts.map(post => 
-        post._id === postId 
-          ? { 
-              ...post, 
-              comments: [...(post.comments || []), newComment] 
-            }
-          : post
-      )
-    );
+  const handlePrevPage = () => {
+    if (pagination.hasPrevPage) {
+      fetchPosts(searchTerm, pagination.currentPage - 1);
+    }
   };
 
-  // Search debounce effect
+  // Search effect
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       fetchPosts(searchTerm);
@@ -333,7 +311,6 @@ const Home = () => {
 
   return (
     <div className="max-w-3xl mx-auto py-4 sm:py-8 px-3 sm:px-4 bg-gray-900 min-h-screen">
-      {/* Search Input */}
       <div className="mb-6 sm:mb-8 sticky top-0 z-10">
         <div className="relative">
           <input
@@ -349,14 +326,11 @@ const Home = () => {
                      transition-all duration-300
                      backdrop-blur-sm"
           />
-          <SearchIcon 
-            className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400" 
-            size={18} 
-          />
+          <SearchIcon className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400" 
+                     size={18} />
         </div>
       </div>
 
-      {/* Posts List */}
       <AnimatePresence mode="popLayout">
         {posts.length === 0 ? (
           <motion.div
@@ -372,16 +346,40 @@ const Home = () => {
             </p>
           </motion.div>
         ) : (
-          <div className="space-y-4 sm:space-y-6">
-            {posts.map(post => (
-              <HomePost 
-                key={post._id} 
-                post={post} 
-                onLikeToggle={handleLikeToggle}
-                onAddComment={handleAddComment}
-              />
-            ))}
-          </div>
+          <>
+            <div className="space-y-4 sm:space-y-6">
+              {posts.map(post => (
+                <HomePost 
+                  key={post._id} 
+                  post={post} 
+                  onLikeToggle={handleLikeToggle}
+                />
+              ))}
+            </div>
+
+            {/* Pagination Controls */}
+            <div className="flex justify-center items-center space-x-4 mt-6">
+              <button
+                onClick={handlePrevPage}
+                disabled={!pagination.hasPrevPage}
+                className="px-4 py-2 bg-purple-600 text-white rounded 
+                           disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              <span className="text-white">
+                Page {pagination.currentPage} of {pagination.totalPages}
+              </span>
+              <button
+                onClick={handleNextPage}
+                disabled={!pagination.hasNextPage}
+                className="px-4 py-2 bg-purple-600 text-white rounded 
+                           disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
+          </>
         )}
       </AnimatePresence>
 

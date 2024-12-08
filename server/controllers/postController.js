@@ -76,7 +76,7 @@ const createPost = async (req, res) => {
 
 const getPosts = async (req, res) => {
   try {
-    const { search = '', page = 1, limit = 10 } = req.query;
+    const { search = '' } = req.query;
 
     // Construct query for search
     const query = search 
@@ -89,26 +89,14 @@ const getPosts = async (req, res) => {
         }
       : {};
 
-    // Fetch paginated posts
-    const options = {
-      page: parseInt(page),
-      limit: parseInt(limit),
-      populate: { path: 'author', select: 'firstName lastName avatar email' },
-      sort: { createdAt: -1 }
-    };
-
-    const result = await Post.paginate(query, options);
+    // Fetch posts
+    const posts = await Post.find(query)
+      .populate('author', 'firstName lastName avatar email')
+      .sort({ createdAt: -1 });
 
     res.json({
       success: true,
-      data: result.docs,
-      pagination: {
-        totalDocs: result.totalDocs,
-        totalPages: result.totalPages,
-        currentPage: result.page,
-        hasNextPage: result.hasNextPage,
-        hasPrevPage: result.hasPrevPage
-      }
+      data: posts
     });
   } catch (error) {
     console.error('Error fetching posts:', error);
