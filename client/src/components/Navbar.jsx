@@ -4,7 +4,6 @@ import { useAuth } from '../contexts/AuthContext';
 import { SearchBar } from './search/SearchBar';
 import { NavigationLink, navigationItems } from './navigation/NavigationItems';
 import { VideoModal } from './modals/VideoModal';
-import { Logo } from './navigation/Logo';
 import AskQuestion from '@/pages/AskQuestion';
 import { useNavigate } from 'react-router-dom';
 
@@ -13,7 +12,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const { user, logout } = useAuth();
-  const [notificationCount] = useState(4);
+  const [notificationCount] = useState(user.notifications.filter(n => !n.read).length);
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -25,7 +24,10 @@ const Navbar = () => {
       <nav className="sticky top-0 z-50 bg-background/95 border-b border-accent shadow-lg backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="max-w-screen-xl mx-auto flex items-center justify-between p-4">
           <div className="flex items-center space-x-4">
-            <Logo />
+            <a href="/" className="flex items-center space-x-3 rtl:space-x-reverse">
+              <img src="/logo.png" className="h-8" alt="QA Logo" />
+              <span className="text-text text-2xl font-semibold">AskGenie</span>
+            </a>
             <button
               onClick={() => setShowVideo(true)}
               className="p-2 rounded-full hover:bg-accent/10 transition"
