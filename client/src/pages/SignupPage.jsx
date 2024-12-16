@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { User, Mail, Lock, Shield, BookMarked } from 'lucide-react';
+import { User, Mail, Lock, Shield, BookMarked, Upload, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-const Signup = () => {
+const SignupPage = () => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -13,9 +13,13 @@ const Signup = () => {
     password: '',
     confirmPassword: '',
     department: '',
-    role: 'Member'
+    role: 'Member',
+    avatar: null
   });
   const [error, setError] = useState('');
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
   const { register } = useAuth();
 
@@ -25,6 +29,30 @@ const Signup = () => {
       ...prevState,
       [name]: value
     }));
+  };
+
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result;
+        setFormData(prevState => ({
+          ...prevState,
+          avatar: base64String
+        }));
+        setAvatarPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const togglePasswordVisibility = (field) => {
+    if (field === 'password') {
+      setShowPassword(!showPassword);
+    } else {
+      setShowConfirmPassword(!showConfirmPassword);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -52,8 +80,8 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center px-4 py-8">
-      <Card className="w-full max-w-md bg-gray-800 border-purple-500/20">
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+      <Card className="w-full max-w-lg bg-gray-800 border-purple-500/20">
         <CardHeader>
           <CardTitle className="text-center text-3xl font-bold text-white">
             Create Your Profile
@@ -66,6 +94,37 @@ const Signup = () => {
                 {error}
               </div>
             )}
+
+            {/* Updated Avatar section with better styling */}
+            <div className="flex flex-col items-center gap-4 mb-6">
+              <div className="relative w-28 h-28 rounded-full overflow-hidden border-2 border-purple-500/20 group">
+                {avatarPreview ? (
+                  <img
+                    src={avatarPreview}
+                    alt="Avatar preview"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gray-700 flex items-center justify-center">
+                    <User className="w-14 h-14 text-gray-400" />
+                  </div>
+                )}
+                <label
+                  htmlFor="avatar-upload"
+                  className="absolute inset-0 bg-black/50 flex items-center justify-center 
+                           opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                >
+                  <Upload className="w-6 h-6 text-white" />
+                </label>
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarChange}
+                className="hidden"
+                id="avatar-upload"
+              />
+            </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="relative">
@@ -154,17 +213,29 @@ const Signup = () => {
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
                   required
                   minLength={8}
-                  className="w-full pl-10 pr-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg 
+                  className="w-full pl-10 pr-12 py-3 bg-gray-900/50 border border-gray-700 rounded-lg 
                     text-white placeholder-gray-500 focus:outline-none 
                     focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30"
                   placeholder="Create a strong password"
                 />
+                <button
+                  type="button"
+                  onClick={() => togglePasswordVisibility('password')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 
+                           hover:text-gray-300 focus:outline-none"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
               </div>
             </div>
 
@@ -175,17 +246,51 @@ const Signup = () => {
               <div className="relative">
                 <Shield className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
                 <input
-                  type="password"
+                  type={showConfirmPassword ? "text" : "password"}
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   required
                   minLength={8}
-                  className="w-full pl-10 pr-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg 
+                  className="w-full pl-10 pr-12 py-3 bg-gray-900/50 border border-gray-700 rounded-lg 
                     text-white placeholder-gray-500 focus:outline-none 
                     focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30"
                   placeholder="Confirm your password"
                 />
+                <button
+                  type="button"
+                  onClick={() => togglePasswordVisibility('confirm')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 
+                           hover:text-gray-300 focus:outline-none"
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Role
+              </label>
+              <select
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                className="w-full pl-4 pr-10 py-3 bg-gray-900/50 border border-gray-700 rounded-lg 
+                         text-white appearance-none focus:outline-none 
+                         focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30"
+              >
+                <option value="Member">Member</option>
+                <option value="Moderator">Moderator</option>
+              </select>
+              <div className="absolute right-3 top-[42px] pointer-events-none text-gray-500">
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </svg>
               </div>
             </div>
 
@@ -229,4 +334,4 @@ const Signup = () => {
   );
 };
 
-export default Signup;
+export default SignupPage;

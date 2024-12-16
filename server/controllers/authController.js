@@ -1,27 +1,21 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import User from "../models/users.js"; // Import User model
+import User from "../models/users.js";
 import dotenv from "dotenv";
 dotenv.config();
 
-const JWT_SECRET = process.env.JWT_SECRET; // Replace with a secure key in production
-
-
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // Signup Controller
 export const signup = async (req, res) => {
-  const { firstName, lastName, email, password } = req.body;
+  const { firstName, lastName, email, password, avatar, department, role } = req.body;
 
-  if (!firstName || !lastName || !email || !password) {
-    return res.status(400).json({ message: "All fields are required" });
-  }
+  if (!firstName || !lastName || !email || !password) return res.status(400).json({ message: "All fields are required" });
 
   try {
     // Check if user already exists
     const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
-    }
+    if (existingUser) return res.status(400).json({ message: "User already exists" });
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -32,6 +26,9 @@ export const signup = async (req, res) => {
       lastName,
       email,
       password: hashedPassword,
+      avatar,
+      department,
+      role,
     });
 
     await newUser.save();
@@ -50,22 +47,17 @@ export const signup = async (req, res) => {
 export const login = async (req, res) => {
   const { email, password } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json({ message: "All fields are required" });
-  }
+  if (!email || !password) return res.status(400).json({ message: "All fields are required" });
 
   try {
-    // Check if user exists
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    // Check if user exists and explicitly select the password field
+    const user = await User.findOne({ email }).select("+password");
+
+    if (!user) return res.status(404).json({ message: "User not found" });
 
     // Compare the password
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
+    if (!isPasswordValid) return res.status(401).json({ message: "Invalid credentials" });
 
     const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: "1d" });
 

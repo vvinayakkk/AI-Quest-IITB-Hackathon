@@ -1,5 +1,22 @@
 import mongoose from 'mongoose';
 
+const commentSchema = new mongoose.Schema({
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Users',
+    required: true
+  },
+  content: {
+    type: String,
+    required: [true, 'Comment content is required'],
+    trim: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
 const postSchema = new mongoose.Schema({
   title: {
     type: String,
@@ -37,29 +54,14 @@ const postSchema = new mongoose.Schema({
   }],
   author: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Users',  // Updated to match model name
+    ref: 'Users',
     required: [true, 'Post must have an author']
   },
   likes: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Users'
   }],
-  comments: [{
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Users',
-      required: true
-    },
-    content: {
-      type: String,
-      required: [true, 'Comment content is required'],
-      trim: true
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now
-    }
-  }],
+  comments: [commentSchema],
   views: {
     type: Number,
     default: 0,

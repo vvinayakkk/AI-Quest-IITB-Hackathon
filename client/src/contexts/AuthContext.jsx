@@ -89,7 +89,7 @@ export function AuthProvider({ children }) {
       const userData = profileResponse.data;
       setUser(userData);
       setIsLoggedIn(true);
-      navigate('/dashboard'); // Optional: redirect after login
+      navigate('/dashboard');
       return userData;
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Login failed';
@@ -109,7 +109,7 @@ export function AuthProvider({ children }) {
       const newUser = profileResponse.data;
       setUser(newUser);
       setIsLoggedIn(true);
-      navigate('/onboarding'); // Optional: redirect to onboarding
+      navigate('/onboarding');
       return newUser;
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Registration failed';

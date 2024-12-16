@@ -8,11 +8,11 @@ import AskQuestion from '@/pages/AskQuestion';
 import CategoriesPage from './pages/CategoriesPage';
 import Home from './pages/Home';
 import LandingPage from './pages/LandingPage';
-import Login from './pages/Login';
+import LoginPage from './pages/LoginPage';
 import NotificationsPage from './pages/NotificationPage';
 import PostDetail from './pages/PostDetail';
 import ProfilePage from './pages/ProfilePage';
-import Register from './pages/Register';
+import SignupPage from './pages/SignupPage';
 import TagsPage from '@/pages/TagsPage';
 
 import { Loader2 } from 'lucide-react';
@@ -46,18 +46,18 @@ const App = () => {
         <Routes>
           {/* Routes without Layout */}
           <Route path="/" element={<LandingPage />} />
-          <Route path="/signup" element={<Register />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/login" element={<LoginPage />} />
 
           {/* Routes with Layout */}
           <Route element={<ProtectedRoute />}>
             <Route element={<MainLayout />}>
               <Route path="/home" element={<Home />} />
-              <Route path="/post/:id" element={<PostDetail />} /> {/* Add :id parameter */}
+              <Route path="/post/:id" element={<PostDetail />} />
               <Route path="/qa-ask" element={<AskQuestion />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/tags" element={<TagsPage />} />
-              <Route path="/notif" element={<NotificationsPage />} />
+              <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/categories" element={<CategoriesPage />} />
             </Route>
           </Route>
