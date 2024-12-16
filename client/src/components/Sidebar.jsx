@@ -103,7 +103,7 @@ const Sidebar = () => {
         </Tabs.Root>
 
         {/* Genie Bot Avatar */}
-        <div className="p-4 border-t border-accent/20">
+        <div className="p-4 border-t border-accent/20" onClick={() => navigate('/genie')}>
           <div className="flex items-center gap-3 px-4 py-3 rounded-lg 
                          bg-primary/5 hover:bg-primary/10 transition-all duration-200
                          cursor-pointer">

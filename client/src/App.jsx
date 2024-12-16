@@ -14,6 +14,7 @@ import PostDetail from './pages/PostDetail';
 import ProfilePage from './pages/ProfilePage';
 import SignupPage from './pages/SignupPage';
 import TagsPage from '@/pages/TagsPage';
+import AskGenie from '@/pages/AskGenie';
 
 import { Loader2 } from 'lucide-react';
 
@@ -59,6 +60,7 @@ const App = () => {
               <Route path="/tags" element={<TagsPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/categories" element={<CategoriesPage />} />
+              <Route path="/genie" element={<AskGenie />} />
             </Route>
           </Route>
         </Routes>
