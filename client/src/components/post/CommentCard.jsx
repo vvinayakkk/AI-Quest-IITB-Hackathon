@@ -61,12 +61,17 @@ const CommentCard = ({ comment, postId, onVote, onFlag, onDelete }) => {
           <div className="flex justify-between mb-4">
             <div className="flex items-center gap-3">
               <Avatar className={`h-12 w-12 rounded-full border-2 ${getBadgeColor()}`}>
-                <AvatarImage src={comment.author.avatar || "/placeholder.svg"} />
+                <AvatarImage src={comment.author.avatar} />
                 <AvatarFallback>{`${comment.author.firstName[0]}${comment.author.lastName[0]}`}</AvatarFallback>
               </Avatar>
               <div className="flex flex-col">
                 <div className="flex items-center gap-2">
-                  <span className="text-text font-semibold">{`${comment.author.fullName}`}</span>
+                  <div className="flex items-center">
+                    <span className="text-text font-semibold">{comment.author.fullName}</span>
+                    {comment.author.verified && (
+                      <BadgeCheck className="w-4 h-4 text-purple-500 ml-1" />
+                    )}
+                  </div>
                   {getReplyLabel()}
                 </div>
                 {comment.author?.department && <span className="text-sm text-gray-400">{comment.author?.department}</span>}
@@ -78,15 +83,6 @@ const CommentCard = ({ comment, postId, onVote, onFlag, onDelete }) => {
                 </span>
               </div>
             </div>
-
-            {((comment.author._id === user._id) || (["Admin", "Moderator"].includes(user.role))) && <Button
-              variant="ghost"
-              size="sm"
-              className="gap-2 text-red-400 hover:bg-red-500/10 transition-colors"
-              onClick={onDelete}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>}
           </div>
 
           <div className="mb-4">
@@ -115,7 +111,17 @@ const CommentCard = ({ comment, postId, onVote, onFlag, onDelete }) => {
               </Button>
             </div>
 
-            <Button
+            <div className="flex gap-1">
+            {((comment.author._id === user._id) || (["Admin", "Moderator"].includes(user.role))) && <Button
+              variant="ghost"
+              size="sm"
+              className="gap-2 text-red-400 hover:bg-red-500/10 transition-colors"
+              onClick={onDelete}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>}
+
+            {/* <Button
               variant="ghost"
               size="sm"
               className={`gap-2 ${flagged ? 'text-red-400' : ''} hover:bg-white/10 transition-colors`}
@@ -123,7 +129,8 @@ const CommentCard = ({ comment, postId, onVote, onFlag, onDelete }) => {
             >
               <Flag className="h-4 w-4" />
               <span>Flag</span>
-            </Button>
+            </Button> */}
+          </div>
           </div>
         </div>
       </div>

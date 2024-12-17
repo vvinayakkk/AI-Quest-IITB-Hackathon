@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
-import { Trash2, Bookmark, BookmarkCheck, ThumbsUp, MessageCircle, Flag } from "lucide-react"
+import { Trash2, Bookmark, BookmarkCheck, ThumbsUp, MessageCircle, Flag, BadgeCheck } from "lucide-react"
 import { useUser } from "@/providers/UserProvider"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardHeader } from "@/components/ui/card"
@@ -119,7 +119,7 @@ const Post = ({ post, setPosts }) => {
           <div className="flex items-start gap-4">
             <Avatar className="h-12 w-12 rounded-xl border-2 border-purple-500/20">
               <AvatarImage src={post.author.avatar} />
-              <AvatarFallback>{post.author?.fullName[0]}</AvatarFallback>
+              <AvatarFallback>{`${post.author.firstName[0]}${post.author.lastName[0]}`}</AvatarFallback>
             </Avatar>
 
             <div className="flex-1">
@@ -127,38 +127,18 @@ const Post = ({ post, setPosts }) => {
                 <h2 className="text-2xl font-bold text-white mb-2 leading-tight break-words">
                   {parseHashtags(post.title)}
                 </h2>
-
-                {/* Top right actions */}
-                <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-purple-400 hover:text-purple-300 hover:bg-purple-500/20 transition-all"
-                    onClick={handleBookmark}
-                  >
-                    {isBookmarked ? (
-                      <BookmarkCheck className="h-5 w-5 fill-purple-400" />
-                    ) : (
-                      <Bookmark className="h-5 w-5" />
-                    )}
-                  </Button>
-
-                  {((post.author._id === user._id) || (["Admin", "Moderator"].includes(user.role))) && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-red-400 hover:text-red-300 hover:bg-red-500/20 transition-all"
-                      onClick={handleDeletePost}
-                    >
-                      <Trash2 className="h-5 w-5" />
-                    </Button>
-                  )}
-                </div>
               </div>
 
               {/* Author Info */}
               <div className="flex items-center gap-2 text-sm text-gray-400 mb-4">
-                <span>Posted by {post.author?.fullName}</span>
+                <div className="flex items-center">
+                  <span className="flex items-center">
+                    Posted by {post.author.fullName}
+                    {post.author.verified && (
+                      <BadgeCheck className="w-4 h-4 text-purple-500 ml-1" />
+                    )}
+                  </span>
+                </div>
                 {post.author?.department && (
                   <>
                     <span>•</span>
@@ -223,15 +203,41 @@ const Post = ({ post, setPosts }) => {
                     >
                       <MessageCircle className="h-5 w-5" />
                     </Button>
+
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-purple-400 hover:text-purple-300 hover:bg-purple-500/20 transition-all"
+                      onClick={handleBookmark}
+                    >
+                      {isBookmarked ? (
+                        <BookmarkCheck className="h-5 w-5 fill-purple-400" />
+                      ) : (
+                        <Bookmark className="h-5 w-5" />
+                      )}
+                    </Button>
                   </div>
 
-                  <Button variant="ghost"
-                    size="sm"
-                    className={`gap-2 hover:bg-white/10 text-white`}
-                  >
-                    <Flag className="h-4 w-4" />
-                    <span>Report</span>
-                  </Button>
+                  <div className="flex gap-1">
+                    {((post.author._id === user._id) || (["Admin", "Moderator"].includes(user.role))) && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-400 hover:text-red-300 hover:bg-red-500/20 transition-all"
+                        onClick={handleDeletePost}
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </Button>
+                    )}
+
+                    <Button variant="ghost"
+                      size="sm"
+                      className={`gap-2 hover:bg-white/10 text-white`}
+                    >
+                      <Flag className="h-4 w-4" />
+                      <span>Report</span>
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
