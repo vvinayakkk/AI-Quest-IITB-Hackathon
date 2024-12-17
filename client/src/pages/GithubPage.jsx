@@ -7,6 +7,13 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import EnhancedSingleFileChatInterface from '@/components/AIChatGithub';
 import RepoChatInterface from '@/components/RepoChat';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
+
 
 const createFileTree = (files) => {
   const tree = {};
@@ -104,6 +111,23 @@ const GithubPage = () => {
   const [isIndexingRepo, setIsIndexingRepo] = useState(false);
   const [isRepoChatEnabled, setIsRepoChatEnabled] = useState(false);
   const [showRepoChat, setShowRepoChat] = useState(false);
+  const [chatType, setChatType] = useState(null);
+
+  const handleAIChat = (type) => {
+    if (type === 'repo') {
+      indexEntireRepo();
+    } else if (type === 'file') {
+      setShowRepoChat(true);
+      setChatContext({
+        owner,
+        repo,
+        selectedFile,
+        fileContent: fileContent[selectedFile]
+      });
+    }
+    setChatType(type);
+  };
+
 
   const isTextFile = (filename) => {
     const textExtensions = [
@@ -238,57 +262,64 @@ const GithubPage = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-6 text-gray-200">
-    <div className="flex items-center gap-4 mb-8">
-      <form onSubmit={fetchRepoData} className="flex-1 flex gap-4">
-        <Input
-          value={owner}
-          onChange={(e) => setOwner(e.target.value)}
-          placeholder="Owner"
-          className="bg-background/50 border-primary/20 text-black"
-        />
-        <Input
-          value={repo}
-          onChange={(e) => setRepo(e.target.value)}
-          placeholder="Repository"
-          className="bg-background/50 border-primary/20 text-black"
-        />
-        <Button 
-          type="submit"
-          disabled={isLoading}
-          className="bg-accent hover:bg-accent/90 text-background"
-        >
-          {isLoading ? 'Loading...' : 'Fetch Repository'}
-        </Button>
-        
-        {files.length > 0 && (
+      <div className="flex items-center gap-4 mb-8">
+        <form onSubmit={fetchRepoData} className="flex-1 flex gap-4">
+          <Input
+            value={owner}
+            onChange={(e) => setOwner(e.target.value)}
+            placeholder="Owner"
+            className="bg-background/50 border-primary/20 text-black"
+          />
+          <Input
+            value={repo}
+            onChange={(e) => setRepo(e.target.value)}
+            placeholder="Repository"
+            className="bg-background/50 border-primary/20 text-black"
+          />
           <Button 
-            type="button"
-            onClick={indexEntireRepo}
-            disabled={isIndexingRepo}
-            className="bg-green-600 hover:bg-green-700 text-white flex items-center"
+            type="submit"
+            disabled={isLoading}
+            className="bg-accent hover:bg-accent/90 text-background"
           >
-            {isIndexingRepo ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Indexing...
-              </>
-            ) : (
-              <>
-                <MessageSquare className="mr-2 h-4 w-4" />
-                Chat with Repo
-              </>
-            )}
+            {isLoading ? 'Loading...' : 'Fetch Repository'}
           </Button>
-        )}
-      </form>
-    </div>
-
-    {error && (
-      <div className="p-4 mb-6 rounded-lg bg-accent/10 text-accent border border-accent/20">
-        {error}
+          
+          {files.length > 0 && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  type="button"
+                  className="bg-green-600 hover:bg-green-700 text-white flex items-center"
+                >
+                  <MessageSquare className="mr-2 h-4 w-4" />
+                  AI Chat
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem 
+                  onSelect={() => handleAIChat('repo')}
+                  disabled={!files.length}
+                >
+                  Chat with Repo
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onSelect={() => handleAIChat('file')}
+                  disabled={!selectedFile}
+                >
+                  Chat about File
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </form>
       </div>
-    )}
-
+  
+      {error && (
+        <div className="p-4 mb-6 rounded-lg bg-accent/10 text-accent border border-accent/20">
+          {error}
+        </div>
+      )}
+  
       <div className="grid grid-cols-12 gap-6">
         <motion.div 
           layout
@@ -306,7 +337,7 @@ const GithubPage = () => {
             ))}
           </div>
         </motion.div>
-
+  
         <motion.div 
           layout
           className="col-span-9 bg-gray-800/50 rounded-xl border border-gray-700 p-4"
@@ -331,7 +362,7 @@ const GithubPage = () => {
           </div>
         </motion.div>
       </div>
-
+  
       {showRepoChat && (
         <RepoChatInterface 
           owner={owner} 
@@ -339,7 +370,7 @@ const GithubPage = () => {
           onClose={() => setShowRepoChat(false)} 
         />
       )}
-
+  
       {chatContext && (
         <EnhancedSingleFileChatInterface
           owner={chatContext.owner}
@@ -351,6 +382,6 @@ const GithubPage = () => {
       )}
     </div>
   );
-};
+}
 
 export default GithubPage;
