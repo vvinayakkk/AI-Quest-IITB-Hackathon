@@ -2,57 +2,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from "@/components/ui/input";
 import { Search } from 'lucide-react';
-
-const tags = [
-  {
-    name: "javascript",
-    count: 2,
-    description: "For questions regarding programming in ECMAScript (JavaScript/JS) and its variants/dialects.",
-    color: "text-yellow-500"
-  },
-  {
-    name: "python",
-    count: 5,
-    description: "Python is a multi-paradigm, dynamically typed, multipurpose programming language.",
-    color: "text-blue-500"
-  },
-  {
-    name: "react",
-    count: 9,
-    description: "React is a JavaScript library for building user interfaces.",
-    color: "text-cyan-500"
-  },
-  {
-    name: "node.js",
-    count: 2,
-    description: "Node.js is an event-based, non-blocking, asynchronous I/O runtime.",
-    color: "text-green-500"
-  },
-  {
-    name: "typescript",
-    count: 1,
-    description: "TypeScript is a strongly typed programming language that builds on JavaScript.",
-    color: "text-blue-400"
-  },
-  {
-    name: "docker",
-    count: 0,
-    description: "Docker is a platform for developing, shipping, and running applications in containers.",
-    color: "text-sky-500"
-  },
-  {
-    name: "aws",
-    count: 0,
-    description: "Amazon Web Services (AWS) is a comprehensive cloud computing platform.",
-    color: "text-orange-500"
-  },
-  {
-    name: "git",
-    count: 2,
-    description: "Git is a distributed version control system for tracking changes in source code.",
-    color: "text-red-500"
-  }
-];
+import { tags } from '@/assets/sampleTags'; 
 
 const TagsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');

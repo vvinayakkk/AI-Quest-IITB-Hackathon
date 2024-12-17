@@ -6,7 +6,6 @@ import { SearchBar } from './search/SearchBar';
 import { UserProfileButton } from './UserProfileButton';
 import { NavigationLink, navigationItems } from './navigation/NavigationItems';
 import { VideoModal } from './modals/VideoModal';
-import AskQuestion from '@/pages/AskQuestion';
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -30,10 +29,11 @@ const Navbar = () => {
       <nav className="sticky top-0 z-50 bg-background/95 border-b border-accent shadow-lg backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="max-w-screen-xl mx-auto flex items-center justify-between p-4">
           <div className="flex items-center space-x-4">
-            <a href="/" className="flex items-center space-x-3 rtl:space-x-reverse">
-              <img src="/logo.png" className="h-8" alt="QA Logo" />
+            <button onClick={() => navigate("/home")} className="flex items-center space-x-3 rtl:space-x-reverse">
+              <img src="/logo.png" className="h-8" alt="AskGenie Logo" />
               <span className="text-text text-2xl font-semibold">AskGenie</span>
-            </a>
+            </button>
+
             <button
               onClick={() => setShowVideo(true)}
               className="p-2 rounded-full hover:bg-accent/10 transition"
@@ -46,9 +46,9 @@ const Navbar = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex flex-1 max-w-xl mx-8">
+          {/* <div className="hidden md:flex flex-1 max-w-xl mx-8">
             <SearchBar />
-          </div>
+          </div> */}
 
           {/* Desktop Menu Items */}
           <div className="hidden md:flex items-center space-x-4">
@@ -100,7 +100,6 @@ const Navbar = () => {
       </nav>
 
       <VideoModal isOpen={showVideo} onClose={() => setShowVideo(false)} />
-      {isOpen && <AskQuestion isOpen={isOpen} setIsOpen={setIsOpen} />}
     </>
   );
 };

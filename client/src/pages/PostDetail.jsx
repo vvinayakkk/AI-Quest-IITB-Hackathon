@@ -6,7 +6,6 @@ import axios from 'axios'
 import { useUser } from "@/providers/UserProvider"
 import Post from "@/components/post/Post"
 import CommentCard from "@/components/post/CommentCard"
-import ReplyInput from "@/components/post/ReplyInput"
 import RelatedQuestions from "@/components/post/RelatedQuestions"
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL
@@ -105,7 +104,9 @@ const PostDetail = () => {
       _id: `temp-${Date.now()}`,
       content,
       author: user,
-      upvotes: 0,
+      type: 'user',
+      upvotes: [],
+      replies: [],
       createdAt: new Date().toISOString(),
     }
 
@@ -113,7 +114,7 @@ const PostDetail = () => {
 
     try {
       const response = await axios.post(
-        `${SERVER_URL}/post/${id}/comment`, 
+        `${SERVER_URL}/post/${id}/comment`,
         { content },
         {
           headers: {
@@ -138,7 +139,7 @@ const PostDetail = () => {
     ))
 
     try {
-      await axios.post(`${SERVER_URL}/comment/${commentId}/upvote`, {
+      await axios.post(`${SERVER_URL}/post/comment/${commentId}/upvote`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -184,7 +185,7 @@ const PostDetail = () => {
     setComments(prev => prev.filter(comment => comment._id !== commentId))
 
     try {
-      await axios.delete(`${SERVER_URL}/comment/${commentId}`, {
+      await axios.delete(`${SERVER_URL}/post/comment/${commentId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -218,7 +219,7 @@ const PostDetail = () => {
     )
   }
 
-  const sortedComments = replies.sort((a, b) => {
+  const sortedComments = comments.sort((a, b) => {
     // Correct answers have highest priority
     if (a.type === 'correct' && b.type !== 'correct') return -1;
     if (a.type !== 'correct' && b.type === 'correct') return 1;
@@ -245,6 +246,8 @@ const PostDetail = () => {
         <Post
           post={post}
           setPosts={null}
+          handleAddComment={handleAddComment}
+          commentRedirect={false}
         />
 
         <AnimatePresence mode="popLayout">
@@ -266,8 +269,6 @@ const PostDetail = () => {
             </motion.div>
           ))}
         </AnimatePresence>
-
-        <ReplyInput onSubmit={handleAddComment} />
         {post?.relatedQuestions && <RelatedQuestions relatedQuestions={post.relatedQuestions} />}
       </div>
     </motion.div>

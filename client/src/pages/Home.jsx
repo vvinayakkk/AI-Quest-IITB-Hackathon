@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import { SearchIcon, PlusIcon } from 'lucide-react';
+import { SearchIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import Post from '@/components/post/Post';
 import axios from 'axios';
 
@@ -12,7 +11,6 @@ const HomePage = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const navigate = useNavigate();
 
   // Fetch posts from backend with search
   const fetchPosts = async (search = '') => {

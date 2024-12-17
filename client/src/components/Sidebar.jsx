@@ -17,8 +17,8 @@ const Sidebar = () => {
     { name: "Bookmarks", icon: BookmarkIcon },
   ];
 
-  const categories = ["Gaming", "Movies", "Videos", "Coding"];
-  const tags = ["Art", "Code", "Question", "General"];
+  const categories = ["Database", "Programming", "DevOps"];
+  const tags = ["node.js", "git", "docker", "aws"];
 
   const handleTabClick = (item) => {
     if (item === "Topics") navigate('/home');

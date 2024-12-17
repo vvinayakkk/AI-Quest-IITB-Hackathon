@@ -69,11 +69,7 @@ const createPost = async (req, res) => {
       views: 0,
     });
 
-    await Users.findByIdAndUpdate(
-      userId,
-      { $push: { posts: post._id } },
-      { new: true }
-    );
+    await Users.findByIdAndUpdate(userId, { $push: { posts: post._id } }, { new: true });
 
     // Populate author details
     await post.populate({
@@ -215,11 +211,8 @@ const addComment = async (req, res) => {
     // Add comment to post and user
     post.comments.push(comment._id);
     await post.save();
-    
-    await Users.findByIdAndUpdate(
-      userId,
-      { $push: { comments: comment._id } }
-    );
+
+    await Users.findByIdAndUpdate(userId, { $push: { comments: comment._id } });
 
     // Populate the comment's author details
     await comment.populate({
@@ -251,8 +244,7 @@ const deletePost = async (req, res) => {
     const post = await findPostById(req.params.id);
 
     // Check if user is post author or has admin/moderator privileges
-    const canDelete = post.author._id.toString() === userId || 
-                     (user && ["Admin", "Moderator"].includes(user.role));
+    const canDelete = post.author._id.toString() === userId || (user && ["Admin", "Moderator"].includes(user.role));
 
     if (!canDelete) {
       return res.status(403).json({
@@ -261,10 +253,7 @@ const deletePost = async (req, res) => {
       });
     }
 
-    await Users.findByIdAndUpdate(
-      post.author._id,
-      { $pull: { posts: post._id } }
-    );
+    await Users.findByIdAndUpdate(post.author._id, { $pull: { posts: post._id } });
 
     await Post.findByIdAndDelete(req.params.id);
 
@@ -299,8 +288,7 @@ const deleteComment = async (req, res) => {
       });
     }
 
-    const canDelete = comment.author._id.toString() === userId || 
-                     (user && ["Admin", "Moderator"].includes(user.role));
+    const canDelete = comment.author._id.toString() === userId || (user && ["Admin", "Moderator"].includes(user.role));
 
     if (!canDelete) {
       return res.status(403).json({
@@ -308,6 +296,18 @@ const deleteComment = async (req, res) => {
         message: "Not authorized to delete this comment",
       });
     }
+
+    const getAllNestedReplies = async (replyIds) => {
+      let allReplies = [...replyIds];
+      for (const replyId of replyIds) {
+        const reply = await Comment.findById(replyId);
+        if (reply && reply.replies.length > 0) {
+          const nestedReplies = await getAllNestedReplies(reply.replies);
+          allReplies = [...allReplies, ...nestedReplies];
+        }
+      }
+      return allReplies;
+    };
 
     // Get all nested reply IDs
     const replyIds = await getAllNestedReplies(comment.replies);
@@ -326,19 +326,13 @@ const deleteComment = async (req, res) => {
 
     // Update all affected users' comment arrays
     const userUpdates = Object.entries(commentsByAuthor).map(([authorId, commentIds]) =>
-      Users.findByIdAndUpdate(
-        authorId,
-        { $pull: { comments: { $in: commentIds } } }
-      )
+      Users.findByIdAndUpdate(authorId, { $pull: { comments: { $in: commentIds } } })
     );
-    
+
     await Promise.all([
       ...userUpdates,
       Comment.deleteMany({ _id: { $in: allCommentIds } }),
-      Post.findOneAndUpdate(
-        { comments: { $elemMatch: { $eq: commentId } } },
-        { $pull: { comments: { $in: allCommentIds } } }
-      )
+      Post.findOneAndUpdate({ comments: { $elemMatch: { $eq: commentId } } }, { $pull: { comments: { $in: allCommentIds } } }),
     ]);
 
     res.json({

@@ -6,11 +6,12 @@ import { Flag, BadgeCheck, Star, Trash2, ThumbsUp, MessageCircle } from 'lucide-
 import { formatTimeAgo, formatUTCTimestamp } from "@/utils/dateUtils"
 import { useUser } from "@/providers/UserProvider"
 import { useNavigate } from "react-router-dom"
+import { parseHashtags } from "@/utils/hashtagUtils"
 
 const CommentCard = ({ comment, postId, onVote, onFlag, onDelete }) => {
   const navigate = useNavigate()
   const { user } = useUser()
-  const [flagged] = useState(comment.flagged.status)
+  const [flagged] = useState(comment.flagged?.status)
   const [upvotes] = useState(comment.upvotes?.length || 0)
   const [liked, setLiked] = useState(comment.upvotes?.includes(user._id))
 
@@ -86,7 +87,7 @@ const CommentCard = ({ comment, postId, onVote, onFlag, onDelete }) => {
           </div>
 
           <div className="mb-4">
-            <p className="text-gray-200 leading-relaxed">{comment.content}</p>
+            <p className="text-gray-200 leading-relaxed">{parseHashtags(comment.content)}</p>
           </div>
 
           <div className="flex justify-between text-gray-400">
@@ -95,7 +96,7 @@ const CommentCard = ({ comment, postId, onVote, onFlag, onDelete }) => {
                 variant="ghost"
                 size="sm"
                 className={"transition-all hover:bg-white/10 text-white"}
-                onClick={() => handleVote(comment._id)}
+                onClick={() => { liked ? handleVote(comment._id, 1) : handleVote(comment._id, -1) }}
               >
                 <ThumbsUp className={`h-4 w-4 ${liked ? 'fill-current' : ''}`} />
                 <span>{upvotes}</span>
@@ -112,16 +113,16 @@ const CommentCard = ({ comment, postId, onVote, onFlag, onDelete }) => {
             </div>
 
             <div className="flex gap-1">
-            {((comment.author._id === user._id) || (["Admin", "Moderator"].includes(user.role))) && <Button
-              variant="ghost"
-              size="sm"
-              className="gap-2 text-red-400 hover:bg-red-500/10 transition-colors"
-              onClick={onDelete}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>}
+              {((comment.author._id === user._id) || (["Admin", "Moderator"].includes(user.role))) && <Button
+                variant="ghost"
+                size="sm"
+                className="gap-2 text-red-400 hover:bg-red-500/10 transition-colors"
+                onClick={() => onDelete(comment._id)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>}
 
-            {/* <Button
+              {/* <Button
               variant="ghost"
               size="sm"
               className={`gap-2 ${flagged ? 'text-red-400' : ''} hover:bg-white/10 transition-colors`}
@@ -130,7 +131,7 @@ const CommentCard = ({ comment, postId, onVote, onFlag, onDelete }) => {
               <Flag className="h-4 w-4" />
               <span>Flag</span>
             </Button> */}
-          </div>
+            </div>
           </div>
         </div>
       </div>
