@@ -11,7 +11,7 @@ const SORT_OPTIONS = {
   DESC: 'descending'
 };
 
-const Bookmarks = () => {
+const MyPostsPage = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -22,7 +22,7 @@ const Bookmarks = () => {
   const fetchPosts = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${SERVER_URL}/user/get-bookmark`, {
+      const response = await axios.get(`${SERVER_URL}/user/posts`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -57,9 +57,9 @@ const Bookmarks = () => {
   // Display filtered and sorted posts
   const getDisplayedPosts = () => {
     let filteredPosts = [...posts];
-
+    
     if (selectedTags.length > 0) {
-      filteredPosts = filteredPosts.filter(post =>
+      filteredPosts = filteredPosts.filter(post => 
         post.tags?.some(tag => selectedTags.includes(tag))
       );
     }
@@ -169,7 +169,7 @@ const Bookmarks = () => {
             className="text-center py-8"
           >
             <p className="text-gray-400">
-              No Bookmarks found
+              No posts found
             </p>
           </motion.div>
         ) : (
@@ -188,4 +188,4 @@ const Bookmarks = () => {
   );
 };
 
-export default Bookmarks;
+export default MyPostsPage;

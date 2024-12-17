@@ -15,10 +15,11 @@ import ProfilePage from '@/pages/ProfilePage';
 import SignupPage from '@/pages/SignupPage';
 import TagsPage from '@/pages/TagsPage';
 import AskGenie from '@/pages/AskGenie';
+import GithubPage from '@/pages/GithubPage';
+import Bookmarks from '@/pages/Bookmarks';
+import MyPostsPage from '@/pages/MyPostsPage';
 
 import { Loader2 } from 'lucide-react';
-import GithubPage from './pages/GithubPage';
-import Bookmarks from './pages/Bookmarks';
 
 const ProtectedRoute = () => {
   const { user } = useUser();
@@ -58,6 +59,7 @@ const App = () => {
             <Route element={<ProtectedRoute />}>
               <Route element={<MainLayout />}>
                 <Route path="/home" element={<HomePage />} />
+                <Route path="/myposts" element={<MyPostsPage />} />
                 <Route path="/post/:id" element={<PostDetail />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/tags" element={<TagsPage />} />

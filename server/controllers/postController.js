@@ -69,6 +69,12 @@ const createPost = async (req, res) => {
       views: 0,
     });
 
+    await Users.findByIdAndUpdate(
+      userId,
+      { $push: { posts: post._id } },
+      { new: true }
+    );
+
     // Populate author details
     await post.populate({
       path: "author",
@@ -206,8 +212,14 @@ const addComment = async (req, res) => {
       content,
     });
 
+    // Add comment to post and user
     post.comments.push(comment._id);
     await post.save();
+    
+    await Users.findByIdAndUpdate(
+      userId,
+      { $push: { comments: comment._id } }
+    );
 
     // Populate the comment's author details
     await comment.populate({
@@ -249,6 +261,11 @@ const deletePost = async (req, res) => {
       });
     }
 
+    await Users.findByIdAndUpdate(
+      post.author._id,
+      { $pull: { posts: post._id } }
+    );
+
     await Post.findByIdAndDelete(req.params.id);
 
     res.json({
@@ -282,7 +299,6 @@ const deleteComment = async (req, res) => {
       });
     }
 
-    // Check if user is comment author or has admin/moderator privileges
     const canDelete = comment.author._id.toString() === userId || 
                      (user && ["Admin", "Moderator"].includes(user.role));
 
@@ -293,29 +309,37 @@ const deleteComment = async (req, res) => {
       });
     }
 
-    // Recursive function to collect all nested reply IDs
-    const getAllNestedReplies = async (replyIds) => {
-      let allReplies = [...replyIds];
-
-      for (const replyId of replyIds) {
-        const reply = await Comment.findById(replyId);
-        if (reply && reply.replies.length > 0) {
-          const nestedReplies = await getAllNestedReplies(reply.replies);
-          allReplies = [...allReplies, ...nestedReplies];
-        }
-      }
-
-      return allReplies;
-    };
-
+    // Get all nested reply IDs
     const replyIds = await getAllNestedReplies(comment.replies);
-    if (replyIds.length > 0) await Comment.deleteMany({ _id: { $in: replyIds } });
+    const allCommentIds = [commentId, ...replyIds];
 
-    // Delete the main comment
-    await Comment.findByIdAndDelete(commentId);
+    // Get all comments including main comment and replies
+    const allComments = await Comment.find({ _id: { $in: allCommentIds } });
 
-    // Find and update the post that contains this comment
-    await Post.findOneAndUpdate({ comments: { $elemMatch: { $eq: commentId } } }, { $pull: { comments: commentId } });
+    // Group comments by author ID for efficient updates
+    const commentsByAuthor = allComments.reduce((acc, comment) => {
+      const authorId = comment.author.toString();
+      if (!acc[authorId]) acc[authorId] = [];
+      acc[authorId].push(comment._id);
+      return acc;
+    }, {});
+
+    // Update all affected users' comment arrays
+    const userUpdates = Object.entries(commentsByAuthor).map(([authorId, commentIds]) =>
+      Users.findByIdAndUpdate(
+        authorId,
+        { $pull: { comments: { $in: commentIds } } }
+      )
+    );
+    
+    await Promise.all([
+      ...userUpdates,
+      Comment.deleteMany({ _id: { $in: allCommentIds } }),
+      Post.findOneAndUpdate(
+        { comments: { $elemMatch: { $eq: commentId } } },
+        { $pull: { comments: { $in: allCommentIds } } }
+      )
+    ]);
 
     res.json({
       success: true,

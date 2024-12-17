@@ -94,6 +94,26 @@ const getUserProfile = async (req, res) => {
   }
 };
 
+const getUserPosts = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await Users.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    const userPosts = await Posts.find({ _id: { $in: user.posts } }).populate(
+      "author",
+      "firstName lastName avatar email verified department"
+    );
+
+    res.status(200).json({
+      success: true,
+      data: userPosts,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Error fetching user posts", error: error.message });
+  }
+};
+
 const bookmarkPost = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -111,18 +131,12 @@ const bookmarkPost = async (req, res) => {
     const isBookmarked = user.bookmarks.includes(postId);
 
     // Update operation based on current bookmark status
-    const operation = isBookmarked 
-      ? { $pull: { bookmarks: postId } }
-      : { $addToSet: { bookmarks: postId } };
+    const operation = isBookmarked ? { $pull: { bookmarks: postId } } : { $addToSet: { bookmarks: postId } };
 
-    const updatedUser = await Users.findByIdAndUpdate(
-      userId,
-      operation,
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
+    const updatedUser = await Users.findByIdAndUpdate(userId, operation, {
+      new: true,
+      runValidators: true,
+    });
 
     if (!updatedUser) {
       return res.status(404).json({
@@ -181,4 +195,4 @@ const getBookmarks = async (req, res) => {
   }
 };
 
-export { getUserProfile, bookmarkPost, getBookmarks };
+export { getUserProfile, getUserPosts, bookmarkPost, getBookmarks };

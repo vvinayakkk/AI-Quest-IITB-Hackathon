@@ -22,7 +22,7 @@ const Sidebar = () => {
 
   const handleTabClick = (item) => {
     if (item === "Topics") navigate('/home');
-    if (item === "MyPosts") navigate('/myposts');
+    if (item === "My Posts") navigate('/myposts');
     if (item === "Categories") setIsCategories(!isCategories);
     if (item === "Tags") setIsTags(!isTags);
     if (item === "Bookmarks") navigate('/bookmarks');

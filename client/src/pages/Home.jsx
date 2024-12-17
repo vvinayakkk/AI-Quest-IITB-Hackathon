@@ -128,18 +128,6 @@ const HomePage = () => {
           </div>
         )}
       </AnimatePresence>
-
-      {/* Create Post Button */}
-      <div className="fixed bottom-6 right-6 z-20">
-        <button
-          onClick={() => navigate('/create-post')}
-          className="bg-purple-600 text-white p-4 rounded-full 
-                     shadow-lg hover:bg-purple-700 transition-colors 
-                     flex items-center justify-center"
-        >
-          <PlusIcon size={24} />
-        </button>
-      </div>
     </div>
   );
 };
