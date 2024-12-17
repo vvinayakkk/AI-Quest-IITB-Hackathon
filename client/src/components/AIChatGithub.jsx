@@ -4,7 +4,13 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 
-const AIChatInterface = ({ owner, repo, selectedFile, onClose }) => {
+const SingleFileChatInterface = ({ 
+  owner, 
+  repo, 
+  selectedFile, 
+  fileContent, 
+  onClose 
+}) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -32,7 +38,9 @@ const AIChatInterface = ({ owner, repo, selectedFile, onClose }) => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/chat/repository/', {
+        console.log("here");
+        
+      const response = await fetch('http://127.0.0.1:8000/api/chat/single-file/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -42,6 +50,7 @@ const AIChatInterface = ({ owner, repo, selectedFile, onClose }) => {
           owner,
           repo,
           selected_file: selectedFile,
+          file_content: fileContent,
           context: messages
         }),
       });
@@ -70,7 +79,9 @@ const AIChatInterface = ({ owner, repo, selectedFile, onClose }) => {
       <div className="p-4 border-b border-gray-700 flex justify-between items-center">
         <div className="flex items-center gap-2">
           <MessageCircle className="w-5 h-5 text-blue-400" />
-          <h3 className="font-semibold text-white">Repository AI Chat</h3>
+          <h3 className="font-semibold text-white">
+            File Chat: {selectedFile.split('/').pop()}
+          </h3>
         </div>
         <Button variant="ghost" size="sm" onClick={onClose}>×</Button>
       </div>
@@ -115,7 +126,7 @@ const AIChatInterface = ({ owner, repo, selectedFile, onClose }) => {
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask about the repository..."
+            placeholder="Ask about this file..."
             className="flex-1"
           />
           <Button type="submit" disabled={isLoading}>
@@ -127,4 +138,4 @@ const AIChatInterface = ({ owner, repo, selectedFile, onClose }) => {
   );
 };
 
-export default AIChatInterface;
+export default SingleFileChatInterface;

@@ -1,7 +1,6 @@
 from django.urls import path
-from .views import index_repository, chat
+from .views import chat_single_file
 
 urlpatterns = [
-    path('chat/repository/index/', index_repository),
-    path('chat/repository/', chat),
+    path('chat/single-file/', chat_single_file),
 ]
