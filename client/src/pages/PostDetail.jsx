@@ -25,7 +25,25 @@ const replies = [
     content: "A smart contract is a program that runs on the Ethereum blockchain that facilitates the exchange of assets.",
     type: "ai",
     upvotes: [],
-    replies: [],
+    replies: [
+      {
+        _id: "r11",
+        author: {
+          _id: "block123",
+          firstName: "Blockchain",
+          lastName: "Fan",
+          fullName: "Blockchain Fan",
+          avatar: "/avatars/blockchainfan.jpg",
+          verified: false
+        },
+        content: "Yes, it also includes support for new scripting capabilities.",
+        type: "user",
+        upvotes: [],
+        replies: [],
+        flagged: { status: true, reason: "", by: null },
+        createdAt: "2024-03-24T12:05:00Z"
+      }
+    ],
     flagged: { status: false, reason: "", by: null },
     createdAt: "2024-03-23T10:20:00Z"
   },

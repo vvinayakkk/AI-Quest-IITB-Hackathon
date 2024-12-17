@@ -160,12 +160,25 @@ const toggleLike = async (req, res) => {
   try {
     const userId = req.user.id;
     const post = await findPostById(req.params.id);
+    const user = await Users.findById(userId);
+    const author = await Users.findById(post.author._id);
 
     // Check if user has already liked the post
     const isLiked = post.likes.some((like) => like.toString() === userId.toString());
 
     if (isLiked) post.likes = post.likes.filter((like) => like.toString() !== userId.toString());
-    else post.likes.push(userId);
+    else {
+      // Notify post author if user is not the author
+      if (author._id.toString() !== userId) {
+        author.notifications.push({
+          type: "upvote",
+          message: `${user.fullName} liked your post "${post.title}"`,
+          link: `/post/${post._id}`,
+        });
+        await author.save();
+      }
+      post.likes.push(userId);
+    }
 
     await post.save();
 
@@ -201,6 +214,8 @@ const addComment = async (req, res) => {
     }
 
     const post = await findPostById(req.params.id);
+    const author = await Users.findById(post.author._id);
+    const user = await Users.findById(userId);
 
     // Create new comment document
     const comment = await Comment.create({
@@ -211,8 +226,17 @@ const addComment = async (req, res) => {
     // Add comment to post and user
     post.comments.push(comment._id);
     await post.save();
-
+    
     await Users.findByIdAndUpdate(userId, { $push: { comments: comment._id } });
+    
+        if (author._id.toString() !== userId) {
+          author.notifications.push({
+            type: "comment",
+            message: `${user.fullName} commented your post "${post.title}"`,
+            link: `/post/${post._id}`,
+          });
+          await author.save();
+        }
 
     // Populate the comment's author details
     await comment.populate({
