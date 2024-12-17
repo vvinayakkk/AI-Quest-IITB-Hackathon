@@ -8,6 +8,8 @@ import { Card, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { formatTimeAgo, formatUTCTimestamp } from "@/utils/dateUtils"
 import ImageGallery from "./ImageGallery"
+import { he } from "date-fns/locale"
+import axios from "axios";
 
 const parseHashtags = (text = '') => {
   return text.split(/(\s+)/).map((part, index) =>
@@ -22,7 +24,9 @@ const parseHashtags = (text = '') => {
 const Post = ({ post, setPosts }) => {
   const { user } = useUser();
   const navigate = useNavigate();
-  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(
+    user?.bookmarks?.includes(post._id) || false
+  );
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(post.likes.length || 0);
 
@@ -32,9 +36,23 @@ const Post = ({ post, setPosts }) => {
   const hasTags = post.tags?.length > 0;
   const hasImages = post.images?.length > 0;
 
+  const SERVER_URL = import.meta.env.VITE_SERVER_URL;
+
   const handleBookmark = async () => {
-    setIsBookmarked(!isBookmarked);
-    // TODO: Implement bookmark API call
+    try {
+      const response = await axios.post(`${SERVER_URL}/user/add-bookmark`, 
+        { postId: post._id },
+        { headers: { Authorization: `Bearer ${user.token}` }}
+      );
+
+      if (response.data.success) {
+        setIsBookmarked(!isBookmarked);
+      } else {
+        console.error('Failed to update bookmark:', response.data.message);
+      }
+    } catch (error) {
+      console.error('Error updating bookmark:', error);
+    }
   };
 
   const handleLike =async  () => {
@@ -48,13 +66,7 @@ const Post = ({ post, setPosts }) => {
       return;
     }
 
-    try {
-      // await axios.delete(`${SERVER_URL}/post/${post._id}`, {
-      //   headers: {
-      //     'Authorization': `Bearer ${localStorage.getItem('token')}`
-      //   }
-      // });
-      
+    try {    
       setPosts(prevPosts => prevPosts.filter(p => p._id !== post._id));
       // TODO: Add success toast notification
     } catch (error) {
@@ -99,7 +111,7 @@ const Post = ({ post, setPosts }) => {
 
         <CardHeader className="p-6">
           <div className="flex items-start gap-4">
-            <Avatar className="h-12 w-12 rounded-xl border-2 border-purple-500/20">
+            <Avatar className="h-12 w-12 rounded-xl">
               <AvatarImage src={post.author.avatar} />
               <AvatarFallback>{post.author?.fullName[0]}</AvatarFallback>
             </Avatar>
