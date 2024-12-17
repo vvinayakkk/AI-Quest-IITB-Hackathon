@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .services import GrokPineconeRAG
-
+from typing import List
 class ProcessUrlsView(APIView):
     def post(self, request):
         """
@@ -47,3 +47,73 @@ class QueryKnowledgeBaseView(APIView):
             "context": context,
             "answer": response
         }, status=status.HTTP_200_OK)
+    
+
+class ChatWithUrlView(APIView):
+    def post(self, request):
+        """
+        Endpoint to chat with content from a specific Wikipedia URL
+        Request body: {
+            "url": "https://en.wikipedia.org/wiki/Some_Topic",
+            "question": "Your specific question about this URL"
+        }
+        """
+        url = request.data.get('url')
+        question = request.data.get('question')
+        
+        if not url or not question:
+            return Response(
+                {"error": "Both URL and question are required"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        rag_system = GrokPineconeRAG()
+        
+        # Modify retrieve_context to filter by specific URL
+        def retrieve_url_context(query: str, url: str, top_k: int = 5) -> List[str]:
+            # Embed query
+            query_embedding = rag_system.embedding_model.encode([query])[0].tolist()
+            
+            # Query Pinecone with URL-specific filter
+            results = rag_system.index.query(
+                vector=query_embedding, 
+                filter={
+                    "source": {"$eq": url}
+                },
+                top_k=top_k, 
+                include_metadata=True
+            )
+            
+            # Log retrieved contexts for debugging
+            print("Retrieved Contexts for Specific URL:")
+            for hit in results['matches']:
+                print(f"Source: {hit['metadata']['source']}")
+                print(f"Text: {hit['metadata']['text'][:200]}...\n")
+            
+            # Extract and return context chunks
+            return [
+                hit['metadata']['text'] 
+                for hit in results['matches']
+            ]
+        
+        # Retrieve context specifically from the given URL
+        context = retrieve_url_context(question, url)
+        
+        # If no context found, return appropriate response
+        if not context:
+            return Response({
+                "question": question,
+                "url": url,
+                "answer": "No relevant information found for this URL and question."
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        # Query Grok with URL-specific context
+        response = rag_system.query_grok(question, context)
+        
+        return Response({
+            "question": question,
+            "url": url,
+            "context": context,
+            "answer": response
+        }, status=status.HTTP_200_OK)
+    

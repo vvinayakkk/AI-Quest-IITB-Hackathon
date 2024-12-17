@@ -77,11 +77,13 @@ class GrokPineconeRAG:
             # Try fetching the page
             try:
                 page = wikipedia.page(title, auto_suggest=True)
+                print(page)
                 return page.content
             except wikipedia.DisambiguationError as e:
                 # If disambiguation occurs, try the first suggested page
                 if e.options:
                     page = wikipedia.page(e.options[0])
+                    print(page)
                     return page.content
             except wikipedia.PageError:
                 # If page not found, try alternative search methods
@@ -122,7 +124,7 @@ class GrokPineconeRAG:
                         'id': vector_id,
                         'values': embedding.tolist(),
                         'metadata': {
-                            'source': url,
+                            'source': url,  # Full URL is stored here
                             'text': chunk,
                             'chunk_index': i
                         }
@@ -163,6 +165,10 @@ class GrokPineconeRAG:
             top_k=top_k, 
             include_metadata=True
         )
+        print("Retrieved Contexts:")
+        for hit in results['matches']:
+            print(f"Source: {hit['metadata']['source']}")
+            print(f"Text: {hit['metadata']['text'][:200]}...\n")
         
         # Extract and return context chunks
         return [
@@ -171,7 +177,7 @@ class GrokPineconeRAG:
         ]
 
     def query_grok(self, question: str, context: List[str] = None) -> str:
-        """Send query to Grok API with optional context"""
+        """Send query to Grok API with enhanced context-aware prompting"""
         # Prepare context
         context_text = "\n\n".join(context) if context else ""
         
@@ -180,14 +186,15 @@ class GrokPineconeRAG:
             "messages": [
                 {
                     "role": "system", 
-                    "content": "You are a helpful AI assistant answering questions based on provided context. If the context doesn't contain enough information, explain what's missing."
+                    "content": "You are a precise AI assistant. ONLY answer based on the provided context. If the context does not contain sufficient information to answer the question, clearly state that the context is insufficient. Do not use general knowledge or make up information.Answer like human, dont use words like based on provided context ...,it should look like a proper human answer, answer in a friendly way"
                 },
                 {
                     "role": "user", 
-                    "content": f"Context:\n{context_text}\n\nQuestion: {question}"
+                    "content": f"Relevant Context:\n{context_text}\n\nStrict Instructions: Answer the following question ONLY using the information in the provided context. If you cannot find a complete answer in the context, explain exactly what information is missing.\n\nQuestion: {question}"
                 }
             ],
-            "temperature": 0.7,
+            "temperature": 0.3,  # Lower temperature for more focused responses
+            "max_tokens": 500,  # Limit response length
             "stream": False
         }
 

@@ -43,9 +43,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'spam',
     'wikipedia_scrape',
-    'github_integration'
+    'github_integration',
+    'smartbot'
 ]
-
+NEO4J_URI = 'bolt://localhost:7687'  # Adjust as per your Neo4j setup
+NEO4J_USERNAME = 'neo4j'
+NEO4J_PASSWORD = 'eguC4Y9TH1ZnXJRO1ZPtZQwbdC6IMlnhwdrgN7PM4Vs'
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware', 
     'django.middleware.security.SecurityMiddleware',
@@ -58,7 +61,17 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'ML.urls'
+PINECONE_API_KEY = 'pcsk_A9UDz_4oE6ModAW6UAGVbmcLg2Hruf2kmxZ1jwkSUC3cfkRM1rBhi7J3wZvLcEjsTYdRN'
+PINECONE_ENVIRONMENT = 'AWS'
+PINECONE_INDEX = 'wikipedia-knowledge-base'
 
+# Neo4j Settings
+NEO4J_URI = 'neo4j+s://03eb5789.databases.neo4j.io'  # or your Neo4j connection URI
+NEO4J_USERNAME = 'neo4j'
+NEO4J_PASSWORD = 'eguC4Y9TH1ZnXJRO1ZPtZQwbdC6IMlnhwdrgN7PM4Vs'
+
+# Grok API Settings
+GROK_API_KEY = 'xai-xuFY6NrPhq1RZ5lDlyznmcdDpsX4n5IDZmOsQLFzrJ3QICPgDe5Nj8FDnVNExPDKug47VI4XUo0PHNxz'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',

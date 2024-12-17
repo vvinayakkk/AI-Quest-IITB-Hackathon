@@ -21,5 +21,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('spam.urls')),
     path('api/', include('wikipedia_scrape.urls')),
-    path('api/', include('github_integration.urls'))
+    path('api/', include('github_integration.urls')),
+    path('api/', include('smartbot.urls'))
 ]
