@@ -6,63 +6,63 @@ const categories = [
     name: "Web Development",
     description: "Frontend, Backend, and Full-stack web development",
     icon: Globe2,
-    questionsCount: 1234,
+    questionsCount: 2,
     color: "text-blue-500"
   },
   {
     name: "Mobile Development",
     description: "iOS, Android, and Cross-platform development",
     icon: Smartphone,
-    questionsCount: 890,
+    questionsCount: 1,
     color: "text-green-500"
   },
   {
     name: "Database",
     description: "SQL, NoSQL, and database design",
     icon: Database,
-    questionsCount: 567,
+    questionsCount: 1,
     color: "text-orange-500"
   },
   {
     name: "DevOps",
     description: "CI/CD, Docker, and Cloud services",
     icon: Server,
-    questionsCount: 432,
+    questionsCount: 0,
     color: "text-purple-500"
   },
   {
     name: "Programming",
     description: "Algorithms, Data Structures, and Problem Solving",
     icon: Code2,
-    questionsCount: 2341,
+    questionsCount: 5,
     color: "text-red-500"
   },
   {
     name: "Software Architecture",
     description: "Design Patterns and System Design",
     icon: Layers,
-    questionsCount: 345,
+    questionsCount: 0,
     color: "text-yellow-500"
   },
   {
     name: "Security",
     description: "Cybersecurity and Application Security",
     icon: Lock,
-    questionsCount: 234,
+    questionsCount: 0,
     color: "text-teal-500"
   },
   {
     name: "Desktop Development",
     description: "Windows, macOS, and Linux applications",
     icon: Laptop2,
-    questionsCount: 178,
+    questionsCount: 3,
     color: "text-indigo-500"
   },
   {
     name: "Version Control",
     description: "Git, SVN, and collaboration tools",
     icon: FileCode2,
-    questionsCount: 145,
+    questionsCount: 1,
     color: "text-pink-500"
   }
 ]

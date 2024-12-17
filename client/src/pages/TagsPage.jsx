@@ -6,49 +6,49 @@ import { Search } from 'lucide-react';
 const tags = [
   {
     name: "javascript",
-    count: 2345,
+    count: 2,
     description: "For questions regarding programming in ECMAScript (JavaScript/JS) and its variants/dialects.",
     color: "text-yellow-500"
   },
   {
     name: "python",
-    count: 2100,
+    count: 5,
     description: "Python is a multi-paradigm, dynamically typed, multipurpose programming language.",
     color: "text-blue-500"
   },
   {
     name: "react",
-    count: 1890,
+    count: 9,
     description: "React is a JavaScript library for building user interfaces.",
     color: "text-cyan-500"
   },
   {
     name: "node.js",
-    count: 1654,
+    count: 2,
     description: "Node.js is an event-based, non-blocking, asynchronous I/O runtime.",
     color: "text-green-500"
   },
   {
     name: "typescript",
-    count: 1432,
+    count: 1,
     description: "TypeScript is a strongly typed programming language that builds on JavaScript.",
     color: "text-blue-400"
   },
   {
     name: "docker",
-    count: 1234,
+    count: 0,
     description: "Docker is a platform for developing, shipping, and running applications in containers.",
     color: "text-sky-500"
   },
   {
     name: "aws",
-    count: 987,
+    count: 0,
     description: "Amazon Web Services (AWS) is a comprehensive cloud computing platform.",
     color: "text-orange-500"
   },
   {
     name: "git",
-    count: 876,
+    count: 2,
     description: "Git is a distributed version control system for tracking changes in source code.",
     color: "text-red-500"
   }
@@ -84,8 +84,8 @@ const TagsPage = () => {
       {/* Tags Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredTags.map(tag => (
-          <Card 
-            key={tag.name} 
+          <Card
+            key={tag.name}
             className="bg-foreground border-dashed border border-accent text-text hover:shadow-lg transition-shadow cursor-pointer"
           >
             <CardHeader className="flex flex-row items-center gap-4">
