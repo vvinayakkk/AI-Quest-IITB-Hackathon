@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { MessageCircle } from 'lucide-react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import AIChatInterface from '@/components/AIChatGithub';
+import EnhancedSingleFileChatInterface from '@/components/AIChatGithub';
 
 const GithubPage = () => {
   const [owner, setOwner] = useState('');
@@ -16,7 +15,8 @@ const GithubPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileContent, setFileContent] = useState({});
-  const [showChat, setShowChat] = useState(false);
+  const [chatContext, setChatContext] = useState(null);
+
   const isTextFile = (filename) => {
     const textExtensions = [
       'txt', 'md', 'js', 'jsx', 'ts', 'tsx', 'css', 'scss', 'html', 'json', 
@@ -53,19 +53,6 @@ const GithubPage = () => {
         .map(file => file.path);
       setFiles(repoFiles);
 
-      // Index the repository for chat functionality
-      await fetch('http://127.0.0.1:8000/api/chat/repository/index/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          owner,
-          repo,
-          files: repoFiles
-        }),
-      });
-
       // Automatically fetch README if it exists
       const readme = repoFiles.find(file => file.toLowerCase().includes('readme.md'));
       if (readme) {
@@ -99,10 +86,22 @@ const GithubPage = () => {
       try {
         const content = await fetchFileContent(file);
         setFileContent(prevContent => ({ ...prevContent, [file]: content }));
+        
+        // Set chat context when file is selected
+        setChatContext({
+          owner,
+          repo,
+          selectedFile: file,
+          fileContent: content
+        });
       } catch (err) {
         setError('Failed to load file content');
       }
     }
+  };
+
+  const handleCloseChat = () => {
+    setChatContext(null);
   };
 
   const getFileIcon = (filename) => {
@@ -142,15 +141,6 @@ const GithubPage = () => {
             {isLoading ? 'Loading...' : 'Fetch Repository'}
           </Button>
         </form>
-        
-        {/* Chat button - modified to toggle chat */}
-        <Button 
-          variant="outline" 
-          className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-300"
-          onClick={() => setShowChat(true)}
-        >
-          <MessageCircle className="mr-2 h-4 w-4" /> Chat with AI
-        </Button>
       </div>
 
       {error && (
@@ -210,12 +200,13 @@ const GithubPage = () => {
       </div>
 
       {/* Chat Interface */}
-      {showChat && (
-        <AIChatInterface
-          owner={owner}
-          repo={repo}
-          selectedFile={selectedFile}
-          onClose={() => setShowChat(false)}
+      {chatContext && (
+        <EnhancedSingleFileChatInterface
+          owner={chatContext.owner}
+          repo={chatContext.repo}
+          selectedFile={chatContext.selectedFile}
+          fileContent={chatContext.fileContent}
+          onClose={handleCloseChat}
         />
       )}
     </div>

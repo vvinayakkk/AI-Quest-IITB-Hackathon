@@ -1,15 +1,17 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
-import { Trash2, Bookmark, BookmarkCheck, ThumbsUp, MessageCircle } from "lucide-react"
+import { Trash2, Bookmark, BookmarkCheck, ThumbsUp, MessageCircle, Flag } from "lucide-react"
 import { useUser } from "@/providers/UserProvider"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { formatTimeAgo, formatUTCTimestamp } from "@/utils/dateUtils"
 import ImageGallery from "./ImageGallery"
-import { he } from "date-fns/locale"
-import axios from "axios";
+import axios from "axios"
+import { toast } from "sonner"
+
+const SERVER_URL = import.meta.env.VITE_SERVER_URL
 
 const parseHashtags = (text = '') => {
   return text.split(/(\s+)/).map((part, index) =>
@@ -18,16 +20,14 @@ const parseHashtags = (text = '') => {
         {part}
       </span>
     ) : part
-  );  
+  );
 };
 
 const Post = ({ post, setPosts }) => {
   const { user } = useUser();
   const navigate = useNavigate();
-  const [isBookmarked, setIsBookmarked] = useState(
-    user?.bookmarks?.includes(post._id) || false
-  );
-  const [isLiked, setIsLiked] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(user.bookmarks?.includes(post._id));
+  const [isLiked, setIsLiked] = useState(post.likes.includes(user._id));
   const [likeCount, setLikeCount] = useState(post.likes.length || 0);
 
   if (!post) return null;
@@ -40,25 +40,53 @@ const Post = ({ post, setPosts }) => {
 
   const handleBookmark = async () => {
     try {
-      const response = await axios.post(`${SERVER_URL}/user/add-bookmark`, 
-        { postId: post._id },
-        { headers: { Authorization: `Bearer ${user.token}` }}
-      );
+      setIsBookmarked(!isBookmarked);
+      const response = await axios.post(`${SERVER_URL}/user/add-bookmark`, {
+        postId: post._id
+      }, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
 
       if (response.data.success) {
-        setIsBookmarked(!isBookmarked);
-      } else {
-        console.error('Failed to update bookmark:', response.data.message);
+        toast.success(isBookmarked ? "Bookmark Removed" : "Post Bookmarked", {
+          description: response.data.message
+        });
       }
     } catch (error) {
-      console.error('Error updating bookmark:', error);
+      setIsBookmarked(isBookmarked);
+      toast.error("Failed to update bookmark", {
+        description: "Please try again later"
+      });
     }
   };
 
-  const handleLike =async  () => {
-    setIsLiked(!isLiked);
-    setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
-    // TODO: Implement like API call
+  const handleLike = async () => {
+    try {
+      setIsLiked(!isLiked);
+      setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
+
+      const response = await axios.post(`${SERVER_URL}/post/${post._id}/like`, {}, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (response.data.success) {
+        toast.success(isLiked ? "Like removed" : "Post liked", {
+          description: response.data.message
+        });
+      }
+    } catch (error) {
+      // Revert optimistic updates
+      setIsLiked(!isLiked);
+      setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
+
+      toast.error("Failed to update like", {
+        description: "Please try again later"
+      });
+    }
   };
 
   const handleDeletePost = async () => {
@@ -66,12 +94,16 @@ const Post = ({ post, setPosts }) => {
       return;
     }
 
-    try {    
+    try {
+      await axios.delete(`${SERVER_URL}/post/${post._id}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
       setPosts(prevPosts => prevPosts.filter(p => p._id !== post._id));
-      // TODO: Add success toast notification
     } catch (error) {
       console.error('Failed to delete post:', error);
-      // TODO: Add error toast notification
     }
   };
 
@@ -82,44 +114,47 @@ const Post = ({ post, setPosts }) => {
       className="hover:shadow-xl hover:shadow-purple-500/20 hover:scale-[1.01] transition-all duration-300"
     >
       <Card className="bg-gray-900/95 border-purple-500/20 backdrop-blur relative hover:border-purple-500/40">
-        {/* Top right actions */}
-        <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-purple-400 hover:text-purple-300 hover:bg-purple-500/20 transition-all"
-            onClick={handleBookmark}
-          >
-            {isBookmarked ? (
-              <BookmarkCheck className="h-5 w-5 fill-purple-400" />
-            ) : (
-              <Bookmark className="h-5 w-5" />
-            )}
-          </Button>
-
-          {((post.author._id === user._id) || (["Admin", "Moderator"].includes(user.role))) && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-red-400 hover:text-red-300 hover:bg-red-500/20 transition-all"
-              onClick={handleDeletePost}
-            >
-              <Trash2 className="h-5 w-5" />
-            </Button>
-          )}
-        </div>
 
         <CardHeader className="p-6">
           <div className="flex items-start gap-4">
-            <Avatar className="h-12 w-12 rounded-xl">
+            <Avatar className="h-12 w-12 rounded-xl border-2 border-purple-500/20">
               <AvatarImage src={post.author.avatar} />
               <AvatarFallback>{post.author?.fullName[0]}</AvatarFallback>
             </Avatar>
 
             <div className="flex-1">
-              <h2 className="text-2xl font-bold text-white mb-2 leading-tight break-words">
-                {parseHashtags(post.title)}
-              </h2>
+              <div className="flex justify-between">
+                <h2 className="text-2xl font-bold text-white mb-2 leading-tight break-words">
+                  {parseHashtags(post.title)}
+                </h2>
+
+                {/* Top right actions */}
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-purple-400 hover:text-purple-300 hover:bg-purple-500/20 transition-all"
+                    onClick={handleBookmark}
+                  >
+                    {isBookmarked ? (
+                      <BookmarkCheck className="h-5 w-5 fill-purple-400" />
+                    ) : (
+                      <Bookmark className="h-5 w-5" />
+                    )}
+                  </Button>
+
+                  {((post.author._id === user._id) || (["Admin", "Moderator"].includes(user.role))) && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-red-400 hover:text-red-300 hover:bg-red-500/20 transition-all"
+                      onClick={handleDeletePost}
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </Button>
+                  )}
+                </div>
+              </div>
 
               {/* Author Info */}
               <div className="flex items-center gap-2 text-sm text-gray-400 mb-4">
@@ -166,26 +201,36 @@ const Post = ({ post, setPosts }) => {
                   </div>
                 )}
 
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={`transition-all hover:bg-white/10 text-white`}
-                    onClick={handleLike}
-                  >
-                    <ThumbsUp 
-                      className={`h-5 w-5 mr-1 ${isLiked ? 'fill-white' : ''}`}
-                    />
-                    <span>{likeCount}</span>
-                  </Button>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className={`transition-all hover:bg-white/10 text-white`}
+                      onClick={handleLike}
+                    >
+                      <ThumbsUp
+                        className={`h-5 w-5 mr-1 ${isLiked ? 'fill-white' : ''}`}
+                      />
+                      <span>{likeCount}</span>
+                    </Button>
 
-                  <Button
-                    variant="ghost"
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="transition-all hover:bg-white/10 text-white"
+                      onClick={() => navigate(`/post/${post._id}`)}
+                    >
+                      <MessageCircle className="h-5 w-5" />
+                    </Button>
+                  </div>
+
+                  <Button variant="ghost"
                     size="sm"
-                    className="transition-all hover:bg-white/10 text-white"
-                    onClick={() => navigate(`/post/${post._id}`)}
+                    className={`gap-2 hover:bg-white/10 text-white`}
                   >
-                    <MessageCircle className="h-5 w-5" />
+                    <Flag className="h-4 w-4" />
+                    <span>Report</span>
                   </Button>
                 </div>
               </div>

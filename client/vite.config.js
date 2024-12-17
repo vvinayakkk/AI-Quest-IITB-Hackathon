@@ -6,14 +6,18 @@ import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig({
   plugins: [
-    react(),
+    react({
+      babel: {
+        plugins: [["babel-plugin-react-compiler"]],
+      },
+    }),
     vercel(),
     VitePWA({
       includeAssets: ["favicon.ico", "apple-touch-icon.png", "mask-icon.svg"],
       manifest: {
-        name: "AiQuest",
-        short_name: "AiQuest",
-        description: "AiQuest App description",
+        name: "AskGenie",
+        short_name: "AskGenie",
+        description: "AskGenie App",
         theme_color: "#ffffff",
         icons: [
           {

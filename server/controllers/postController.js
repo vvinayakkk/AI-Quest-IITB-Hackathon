@@ -1,5 +1,6 @@
 import Post from "../models/post.js";
 import Comment from "../models/comment.js";
+import Users from "../models/users.js";
 
 /**
  * Helper function to find and populate a post by ID
@@ -8,19 +9,19 @@ import Comment from "../models/comment.js";
  */
 const findPostById = async (id) => {
   const post = await Post.findById(id)
-    .populate("author", "firstName lastName avatar email verified department")
+    .populate("author", "firstName lastName fullName avatar email verified department")
     .populate({
       path: "comments",
       populate: [
         {
           path: "author",
-          select: "firstName lastName avatar email verified department",
+          select: "firstName lastName fullName avatar email verified department",
         },
         {
           path: "replies",
           populate: {
             path: "author",
-            select: "firstName lastName avatar email verified department",
+            select: "firstName lastName fullName avatar email verified department",
           },
         },
       ],
@@ -71,7 +72,7 @@ const createPost = async (req, res) => {
     // Populate author details
     await post.populate({
       path: "author",
-      select: "firstName lastName avatar email verified department",
+      select: "firstName lastName fullName avatar email verified department",
     });
 
     res.status(201).json({
@@ -131,7 +132,9 @@ const getPosts = async (req, res) => {
       : {};
 
     // Fetch posts
-    const posts = await Post.find(query).populate("author", "firstName lastName avatar email verified department").sort({ createdAt: -1 });
+    const posts = await Post.find(query)
+      .populate("author", "firstName lastName fullName avatar email verified department")
+      .sort({ createdAt: -1 });
 
     res.json({
       success: true,
@@ -181,7 +184,7 @@ const toggleLike = async (req, res) => {
 
 /**
  * Adds a new comment to a post
- * @route POST /post/:id/comments
+ * @route POST /post/:id/comment
  */
 const addComment = async (req, res) => {
   try {
@@ -197,26 +200,24 @@ const addComment = async (req, res) => {
 
     const post = await findPostById(req.params.id);
 
-    const newComment = {
+    // Create new comment document
+    const comment = await Comment.create({
       author: userId,
       content,
-    };
-
-    post.comments.push(newComment);
-    await post.save();
-
-    // Populate the new comment's user details
-    await post.populate({
-      path: "comments.author",
-      select: "firstName lastName avatar email verified department",
     });
 
-    // Get the last added comment
-    const addedComment = post.comments[post.comments.length - 1];
+    post.comments.push(comment._id);
+    await post.save();
+
+    // Populate the comment's author details
+    await comment.populate({
+      path: "author",
+      select: "firstName lastName fullName avatar email verified department",
+    });
 
     res.status(201).json({
       success: true,
-      data: addedComment,
+      data: comment,
     });
   } catch (error) {
     res.status(400).json({
@@ -233,9 +234,15 @@ const addComment = async (req, res) => {
 const deletePost = async (req, res) => {
   try {
     const userId = req.user.id;
+    const user = await Users.findById(userId);
+
     const post = await findPostById(req.params.id);
 
-    if (post.author._id.toString() !== userId) {
+    // Check if user is post author or has admin/moderator privileges
+    const canDelete = post.author._id.toString() === userId || 
+                     (user && ["Admin", "Moderator"].includes(user.role));
+
+    if (!canDelete) {
       return res.status(403).json({
         success: false,
         message: "Not authorized to delete this post",
@@ -263,10 +270,10 @@ const deletePost = async (req, res) => {
 const deleteComment = async (req, res) => {
   try {
     const userId = req.user.id;
+    const user = await Users.findById(userId);
     const commentId = req.params.id;
 
-    const comment = await Comment.findById(commentId)
-      .populate("author", "firstName lastName");
+    const comment = await Comment.findById(commentId).populate("author", "firstName lastName");
 
     if (!comment) {
       return res.status(404).json({
@@ -275,8 +282,11 @@ const deleteComment = async (req, res) => {
       });
     }
 
-    // Check if user is authorized to delete the comment
-    if (comment.author._id.toString() !== userId) {
+    // Check if user is comment author or has admin/moderator privileges
+    const canDelete = comment.author._id.toString() === userId || 
+                     (user && ["Admin", "Moderator"].includes(user.role));
+
+    if (!canDelete) {
       return res.status(403).json({
         success: false,
         message: "Not authorized to delete this comment",
@@ -286,7 +296,7 @@ const deleteComment = async (req, res) => {
     // Recursive function to collect all nested reply IDs
     const getAllNestedReplies = async (replyIds) => {
       let allReplies = [...replyIds];
-      
+
       for (const replyId of replyIds) {
         const reply = await Comment.findById(replyId);
         if (reply && reply.replies.length > 0) {
@@ -294,22 +304,18 @@ const deleteComment = async (req, res) => {
           allReplies = [...allReplies, ...nestedReplies];
         }
       }
-      
+
       return allReplies;
     };
 
     const replyIds = await getAllNestedReplies(comment.replies);
-    if (replyIds.length > 0) 
-      await Comment.deleteMany({ '_id': { $in: replyIds } });
+    if (replyIds.length > 0) await Comment.deleteMany({ _id: { $in: replyIds } });
 
     // Delete the main comment
     await Comment.findByIdAndDelete(commentId);
 
     // Find and update the post that contains this comment
-    await Post.findOneAndUpdate(
-      { 'comments': { $elemMatch: { $eq: commentId } } },
-      { $pull: { comments: commentId } }
-    );
+    await Post.findOneAndUpdate({ comments: { $elemMatch: { $eq: commentId } } }, { $pull: { comments: commentId } });
 
     res.json({
       success: true,
