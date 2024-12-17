@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronRight, ChevronDown, FileText, Folder } from 'lucide-react';
+import { ChevronRight, ChevronDown, FileText, Folder , MessageSquare,  Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import EnhancedSingleFileChatInterface from '@/components/AIChatGithub';
+import RepoChatInterface from '@/components/RepoChat';
 
 const createFileTree = (files) => {
   const tree = {};
@@ -98,6 +99,11 @@ const GithubPage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileContent, setFileContent] = useState({});
   const [chatContext, setChatContext] = useState(null);
+  
+  // New states for repo-wide chat
+  const [isIndexingRepo, setIsIndexingRepo] = useState(false);
+  const [isRepoChatEnabled, setIsRepoChatEnabled] = useState(false);
+  const [showRepoChat, setShowRepoChat] = useState(false);
 
   const isTextFile = (filename) => {
     const textExtensions = [
@@ -109,6 +115,50 @@ const GithubPage = () => {
     return textExtensions.includes(extension);
   };
 
+  const indexEntireRepo = async () => {
+    if (!owner || !repo) {
+      setError('Please enter owner and repository name');
+      return;
+    }
+  
+    setIsIndexingRepo(true);
+    setError(null);
+  
+    try {
+      console.log('Indexing repo:', { owner, repo, branch });
+  
+      const response = await fetch('http://127.0.0.1:8000/api/index-repo/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          owner,
+          repo,
+          branch
+        })
+      });
+  
+      const data = await response.json();
+      console.log('Indexing response:', data);
+  
+      // Explicitly check for success conditions
+      if (data.status === 'success') {
+        console.log('Setting repo chat states');
+        setIsRepoChatEnabled(true);
+        setShowRepoChat(true);
+      } else {
+        console.error('Indexing failed:', data);
+        setError(data.message || 'Failed to index repository');
+      }
+    } catch (err) {
+      console.error('Indexing error:', err);
+      setError(err.message || 'Failed to index repository');
+    } finally {
+      setIsIndexingRepo(false);
+    }
+  };
+
   const fetchRepoData = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -116,6 +166,8 @@ const GithubPage = () => {
     setFiles([]);
     setSelectedFile(null);
     setFileContent({});
+    setIsRepoChatEnabled(false);
+    setShowRepoChat(false);
 
     try {
       const response = await fetch(
@@ -151,7 +203,6 @@ const GithubPage = () => {
       setIsLoading(false);
     }
   };
-
   const handleFileSelect = async (filePath) => {
     try {
       setSelectedFile(filePath);
@@ -187,35 +238,56 @@ const GithubPage = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-6 text-gray-200">
-      <div className="flex items-center gap-4 mb-8">
-        <form onSubmit={fetchRepoData} className="flex-1 flex gap-4">
-          <Input
-            value={owner}
-            onChange={(e) => setOwner(e.target.value)}
-            placeholder="Owner"
-            className="bg-background/50 border-primary/20 text-black"
-          />
-          <Input
-            value={repo}
-            onChange={(e) => setRepo(e.target.value)}
-            placeholder="Repository"
-            className="bg-background/50 border-primary/20 text-black"
-          />
+    <div className="flex items-center gap-4 mb-8">
+      <form onSubmit={fetchRepoData} className="flex-1 flex gap-4">
+        <Input
+          value={owner}
+          onChange={(e) => setOwner(e.target.value)}
+          placeholder="Owner"
+          className="bg-background/50 border-primary/20 text-black"
+        />
+        <Input
+          value={repo}
+          onChange={(e) => setRepo(e.target.value)}
+          placeholder="Repository"
+          className="bg-background/50 border-primary/20 text-black"
+        />
+        <Button 
+          type="submit"
+          disabled={isLoading}
+          className="bg-accent hover:bg-accent/90 text-background"
+        >
+          {isLoading ? 'Loading...' : 'Fetch Repository'}
+        </Button>
+        
+        {files.length > 0 && (
           <Button 
-            type="submit"
-            disabled={isLoading}
-            className="bg-accent hover:bg-accent/90 text-background"
+            type="button"
+            onClick={indexEntireRepo}
+            disabled={isIndexingRepo}
+            className="bg-green-600 hover:bg-green-700 text-white flex items-center"
           >
-            {isLoading ? 'Loading...' : 'Fetch Repository'}
+            {isIndexingRepo ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Indexing...
+              </>
+            ) : (
+              <>
+                <MessageSquare className="mr-2 h-4 w-4" />
+                Chat with Repo
+              </>
+            )}
           </Button>
-        </form>
-      </div>
+        )}
+      </form>
+    </div>
 
-      {error && (
-        <div className="p-4 mb-6 rounded-lg bg-accent/10 text-accent border border-accent/20">
-          {error}
-        </div>
-      )}
+    {error && (
+      <div className="p-4 mb-6 rounded-lg bg-accent/10 text-accent border border-accent/20">
+        {error}
+      </div>
+    )}
 
       <div className="grid grid-cols-12 gap-6">
         <motion.div 
@@ -259,6 +331,14 @@ const GithubPage = () => {
           </div>
         </motion.div>
       </div>
+
+      {showRepoChat && (
+        <RepoChatInterface 
+          owner={owner} 
+          repo={repo} 
+          onClose={() => setShowRepoChat(false)} 
+        />
+      )}
 
       {chatContext && (
         <EnhancedSingleFileChatInterface
