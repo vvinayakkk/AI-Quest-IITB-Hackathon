@@ -34,10 +34,12 @@ def chat_single_file(request):
 
         # Add chat history context (last 5 messages)
         if chat_context:
-            chat_history = [
-                f"{msg['role']}: {msg['content']}" 
-                for msg in chat_context[-5:]
-            ]
+            chat_history = []
+            for msg in chat_context[-5:]:
+                # More resilient extraction of chat history
+                role = msg.get('role', 'unknown')
+                content = msg.get('content', 'No content')
+                chat_history.append(f"{role}: {content}")
             context_parts.extend(chat_history)
         
         # Join context

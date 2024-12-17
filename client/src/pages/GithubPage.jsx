@@ -2,10 +2,9 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { MessageCircle } from 'lucide-react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import SingleFileChatInterface from '@/components/AIChatGithub';
+import EnhancedSingleFileChatInterface from '@/components/AIChatGithub';
 
 const GithubPage = () => {
   const [owner, setOwner] = useState('');
@@ -16,7 +15,7 @@ const GithubPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileContent, setFileContent] = useState({});
-  const [showChat, setShowChat] = useState(false);
+  const [chatContext, setChatContext] = useState(null);
 
   const isTextFile = (filename) => {
     const textExtensions = [
@@ -87,13 +86,22 @@ const GithubPage = () => {
       try {
         const content = await fetchFileContent(file);
         setFileContent(prevContent => ({ ...prevContent, [file]: content }));
+        
+        // Set chat context when file is selected
+        setChatContext({
+          owner,
+          repo,
+          selectedFile: file,
+          fileContent: content
+        });
       } catch (err) {
         setError('Failed to load file content');
       }
     }
+  };
 
-    // Open chat when file is selected
-    setShowChat(true);
+  const handleCloseChat = () => {
+    setChatContext(null);
   };
 
   const getFileIcon = (filename) => {
@@ -192,13 +200,13 @@ const GithubPage = () => {
       </div>
 
       {/* Chat Interface */}
-      {showChat && selectedFile && (
-        <SingleFileChatInterface
-          owner={owner}
-          repo={repo}
-          selectedFile={selectedFile}
-          fileContent={fileContent[selectedFile] || ''}
-          onClose={() => setShowChat(false)}
+      {chatContext && (
+        <EnhancedSingleFileChatInterface
+          owner={chatContext.owner}
+          repo={chatContext.repo}
+          selectedFile={chatContext.selectedFile}
+          fileContent={chatContext.fileContent}
+          onClose={handleCloseChat}
         />
       )}
     </div>
