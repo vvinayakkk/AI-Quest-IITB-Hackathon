@@ -17,6 +17,7 @@ import TagsPage from '@/pages/TagsPage';
 import AskGenie from '@/pages/AskGenie';
 
 import { Loader2 } from 'lucide-react';
+import GithubPage from './pages/GithubPage';
 
 const ProtectedRoute = () => {
   const { user } = useUser();
@@ -62,6 +63,7 @@ const App = () => {
                 <Route path="/notifications" element={<NotificationsPage />} />
                 <Route path="/categories" element={<CategoriesPage />} />
                 <Route path="/genie" element={<AskGenie />} />
+                <Route path="/github" element={<GithubPage />} />
               </Route>
             </Route>
           </Routes>
