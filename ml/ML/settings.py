@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     'spam',
     'wikipedia_scrape',
     'github_integration',
-    'smartbot'
+    'smartbot',
+    'document_chat'
 ]
 NEO4J_URI = 'bolt://localhost:7687'  # Adjust as per your Neo4j setup
 NEO4J_USERNAME = 'neo4j'

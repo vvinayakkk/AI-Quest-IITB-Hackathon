@@ -2,15 +2,151 @@ import os
 import json
 import requests
 import traceback
+import faiss  # Will use CPU version by default
+import numpy as np
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
+from sentence_transformers import SentenceTransformer
+
+class FAISSRAG:
+    def __init__(self, embedding_model='all-MiniLM-L6-v2'):
+        """
+        Initialize FAISS RAG with embedding model using CPU version
+        
+        Args:
+            embedding_model (str): Sentence transformer model name
+        """
+        # Initialize embedding model
+        self.embedding_model = SentenceTransformer(embedding_model)
+        
+        # Initialize FAISS index and metadata storage
+        self.faiss_index = None
+        self.file_metadata = []
+        self.embedding_dim = self.embedding_model.get_sentence_embedding_dimension()
+        
+        # Initialize FAISS index using CPU
+        self._initialize_faiss_index()
+
+    def _initialize_faiss_index(self):
+        """
+        Initialize FAISS index for similarity search using CPU
+        """
+        # Explicitly create a flat (brute-force) index for dense vectors on CPU
+        self.faiss_index = faiss.IndexFlatL2(self.embedding_dim)
+
+    def generate_embedding(self, text):
+        """
+        Generate embedding for given text
+        
+        Args:
+            text (str): Input text to embed
+        
+        Returns:
+            numpy.ndarray: Embedding vector
+        """
+        try:
+            # Truncate text to prevent excessive embedding
+            truncated_text = str(text)[:1000]
+            embedding = self.embedding_model.encode(truncated_text, convert_to_tensor=False)
+            return embedding
+        except Exception as e:
+            print(f"Embedding Generation Error: {e}")
+            return None
+
+    def index_file(self, owner, repo, file_path, content):
+        """
+        Index a file in FAISS index
+        
+        Args:
+            owner (str): Repository owner
+            repo (str): Repository name
+            file_path (str): Path of the file
+            content (str): File content
+        
+        Returns:
+            bool: Indexing success status
+        """
+        try:
+            # Generate embedding
+            embedding = self.generate_embedding(content)
+            if embedding is None:
+                print(f"Failed to generate embedding for {file_path}")
+                return False
+
+            # Convert embedding to numpy array and reshape
+            embedding_np = np.array(embedding).reshape(1, -1)
+
+            # Add embedding to FAISS index
+            self.faiss_index.add(embedding_np)
+
+            # Store file metadata
+            metadata = {
+                'index': len(self.file_metadata),
+                'owner': owner,
+                'repo': repo,
+                'file_path': file_path,
+                'content': content
+            }
+            self.file_metadata.append(metadata)
+
+            return True
+        
+        except Exception as e:
+            print(f"File Indexing Error: {e}")
+            return False
+
+    def retrieve_relevant_context(self, query, top_k=3):
+        """
+        Retrieve relevant context using vector similarity search
+        
+        Args:
+            query (str): Search query
+            top_k (int, optional): Number of top results to retrieve
+        
+        Returns:
+            list: Relevant file contexts
+        """
+        try:
+            # Generate query embedding
+            query_embedding = self.generate_embedding(query)
+            if query_embedding is None:
+                print("Failed to generate query embedding")
+                return []
+
+            # Reshape query embedding
+            query_embedding_np = np.array(query_embedding).reshape(1, -1)
+
+            # Perform similarity search
+            distances, indices = self.faiss_index.search(query_embedding_np, top_k)
+
+            # Retrieve and return relevant contexts
+            contexts = []
+            for dist, idx in zip(distances[0], indices[0]):
+                if idx < len(self.file_metadata):
+                    metadata = self.file_metadata[idx]
+                    contexts.append({
+                        'file_path': metadata['file_path'],
+                        'content': metadata['content'],
+                        'score': 1 / (1 + dist)  # Convert distance to similarity score
+                    })
+
+            return contexts
+        
+        except Exception as e:
+            print(f"Context Retrieval Error: {e}")
+            print(traceback.format_exc())
+            return []
+
 @csrf_exempt
 @require_http_methods(["POST"])
 def chat_single_file(request):
-    """Chat with a single file context"""
+    """
+    Enhanced chat with file context using FAISS RAG
+    """
     try:
+        # Parse incoming request
         data = json.loads(request.body)
         message = data.get('message')
         owner = data.get('owner')
@@ -18,40 +154,46 @@ def chat_single_file(request):
         selected_file = data.get('selected_file')
         file_content = data.get('file_content', '')
         chat_context = data.get('context', [])
-        
-        # Enhanced logging
-        print("Request Data:")
-        print(f"Owner: {owner}")
-        print(f"Repo: {repo}")
-        print(f"Selected File: {selected_file}")
-        print(f"Message: {message}")
-        print(f"File Content Length: {len(file_content)}")
 
-        # Prepare context
+        # Initialize FAISS RAG
+        rag_handler = FAISSRAG()
+
+        # Index the file
+        indexing_success = rag_handler.index_file(owner, repo, selected_file, file_content)
+        if not indexing_success:
+            print(f"Failed to index file: {selected_file}")
+
+        # Retrieve relevant context
+        relevant_contexts = rag_handler.retrieve_relevant_context(message)
+
+        # Prepare context for LLM
         context_parts = [
-            f"File: {selected_file}\n{file_content[:5000]}"  # Limit content length
+            f"File: {selected_file}\n{file_content[:5000]}"  # Original file content
         ]
+        
+        # Add retrieved contexts
+        context_parts.extend([
+            f"Related Context (File: {ctx['file_path']}, Score: {ctx['score']:.2f}):\n{ctx['content'][:1000]}" 
+            for ctx in relevant_contexts
+        ])
 
-        # Add chat history context (last 5 messages)
+        # Add chat history
         if chat_context:
-            chat_history = []
-            for msg in chat_context[-5:]:
-                # More resilient extraction of chat history
-                role = msg.get('role', 'unknown')
-                content = msg.get('content', 'No content')
-                chat_history.append(f"{role}: {content}")
+            chat_history = [
+                f"{msg.get('role', 'unknown')}: {msg.get('content', 'No content')}" 
+                for msg in chat_context[-5:]
+            ]
             context_parts.extend(chat_history)
         
-        # Join context
-        context_text = "\n\n".join(context_parts) if context_parts else ""
-        
-        # Prepare payload for Grok API
+        context_text = "\n\n".join(context_parts)
+
+        # Prepare payload for LLM API (using Grok as an example)
         payload = {
             "model": "grok-beta",
             "messages": [
                 {
                     "role": "system", 
-                    "content": "You are a helpful AI assistant answering questions about a specific file in a GitHub repository. Provide concise, relevant answers based on the file's content."
+                    "content": "You are a helpful AI assistant answering questions about GitHub repository files. Provide context-aware, precise answers."
                 },
                 {
                     "role": "user", 
@@ -62,63 +204,38 @@ def chat_single_file(request):
             "stream": False
         }
 
-        # Prepare headers
-        grok_headers = {
+        # LLM API headers
+        llm_headers = {
             "Authorization": f"Bearer {os.getenv('GROK_API_KEY')}",
             "Content-Type": "application/json"
         }
 
         try:
-            # Send request to Grok API
-            print("Sending request to Grok API...")
+            # Send request to LLM API
             response = requests.post(
                 "https://api.x.ai/v1/chat/completions", 
-                headers=grok_headers, 
+                headers=llm_headers, 
                 json=payload,
-                timeout=30  # Added timeout
+                timeout=30
             )
             
-            # Enhanced error checking
-            print(f"Response Status Code: {response.status_code}")
-            print(f"Response Headers: {response.headers}")
-            
-            # More comprehensive error handling
+            # Response handling
             if response.status_code != 200:
-                print(f"API Error: {response.status_code}")
-                print(f"Response Content: {response.text}")
                 return JsonResponse({
                     'error': f"API returned status code {response.status_code}",
                     'response_text': response.text
                 }, status=response.status_code)
             
-            # Parse response
             response_json = response.json()
-            print("Full Response JSON:")
-            print(json.dumps(response_json, indent=2))
-            
-            # More robust response extraction
-            if 'choices' in response_json and response_json['choices']:
-                grok_response = response_json['choices'][0]['message']['content']
-            else:
-                print("Unexpected response format")
-                grok_response = "Unable to process the API response"
+            llm_response = response_json['choices'][0]['message']['content']
 
-        except requests.RequestException as e:
-            print(f"Detailed API Error: {e}")
-            print(traceback.format_exc())
-            grok_response = f"Network Error: {e}"
-        except json.JSONDecodeError as e:
-            print(f"JSON Decode Error: {e}")
-            print(f"Response Text: {response.text}")
-            grok_response = "Error parsing API response"
         except Exception as e:
-            print(f"Unexpected Error: {e}")
-            print(traceback.format_exc())
-            grok_response = f"Unexpected error: {e}"
+            llm_response = f"Error processing AI response: {e}"
 
         return JsonResponse({
-            'response': grok_response,
-            'file': selected_file
+            'response': llm_response,
+            'file': selected_file,
+            'related_contexts': [ctx['file_path'] for ctx in relevant_contexts]
         })
 
     except Exception as e:
