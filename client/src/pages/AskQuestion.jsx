@@ -12,7 +12,6 @@ import { Card, CardContent } from '@/components/ui/card';
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    // Handle question submission
     console.log({ title, body, tags })
     setIsOpen(false)
   }

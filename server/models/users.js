@@ -170,7 +170,6 @@ const usersSchema = new mongoose.Schema(
   }
 );
 
-// Virtual for full name
 usersSchema.virtual("fullName").get(function () {
   return `${this.firstName} ${this.lastName}`;
 });

@@ -1,6 +1,7 @@
 import Users from "../models/users.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import Posts from "../models/post.js";
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -24,7 +25,8 @@ export const getUserProfile = async (req, res) => {
       {
         _id: "1",
         type: "upvote",
-        message: 'Someone upvoted your question "How to implement WebSocket in React?"',
+        message:
+          'Someone upvoted your question "How to implement WebSocket in React?"',
         read: false,
         createdAt: "2024-03-17T10:30:00Z",
         postId: "post1",
@@ -32,7 +34,8 @@ export const getUserProfile = async (req, res) => {
       {
         _id: "2",
         type: "comment",
-        message: 'New comment on "Best practices for state management in large React applications"',
+        message:
+          'New comment on "Best practices for state management in large React applications"',
         read: false,
         createdAt: "2024-03-17T08:30:00Z",
         postId: "post2",
@@ -40,7 +43,8 @@ export const getUserProfile = async (req, res) => {
       {
         _id: "3",
         type: "reply",
-        message: 'Someone replied to your comment on "Optimizing performance in Next.js applications"',
+        message:
+          'Someone replied to your comment on "Optimizing performance in Next.js applications"',
         read: false,
         createdAt: "2024-03-16T10:30:00Z",
         postId: "post3",
@@ -104,5 +108,105 @@ export const getUserProfile = async (req, res) => {
   } catch (error) {
     console.error("Profile fetch error:", error);
     res.status(401).json({ message: "Unauthorized" });
+  }
+};
+
+export const bookmarkPost = async (req, res) => {
+  try {
+    const { postId } = req.body;
+    const token = req.headers.authorization?.split(" ")[1];
+
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "No token provided",
+      });
+    }
+
+    if (!postId) {
+      return res.status(400).json({
+        success: false,
+        message: "Post ID is required",
+      });
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const userId = decoded.id;
+
+    const updatedUser = await Users.findByIdAndUpdate(
+      userId,
+      {
+        $addToSet: { bookmarks: postId },
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Post bookmarked successfully",
+      data: updatedUser,
+    });
+  } catch (error) {
+    if (error.name === "JsonWebTokenError") {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid token",
+      });
+    }
+    res.status(500).json({
+      success: false,
+      message: "Error bookmarking post",
+      error: error.message,
+    });
+  }
+};
+
+export const getBookmarks = async (req, res) => {
+  try {
+    const token = req.headers.authorization.split(" ")[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const user = await Users.findById(decoded.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const bookmarks = user.bookmarks;
+    const bookmarkedPosts = await Posts.find({ _id: { $in: bookmarks } })
+      .populate("author", "firstName lastName avatar email verified department")
+      .populate({
+        path: "comments",
+        populate: [
+          {
+            path: "author",
+            select: "firstName lastName avatar email verified department",
+          },
+          {
+            path: "replies",
+            populate: {
+              path: "author",
+              select: "firstName lastName avatar email verified department",
+            },
+          },
+        ],
+      });
+
+    res.status(200).json({
+      success: true,
+      data: bookmarkedPosts,
+    });
+  } catch (error) {
+    console.error("Profile fetch error:", error);
+    res.status(500).json({ message: "Error occured" });
   }
 };

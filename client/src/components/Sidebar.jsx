@@ -25,6 +25,7 @@ const Sidebar = () => {
     if (item === "MyPosts") navigate('/myposts');
     if (item === "Categories") setIsCategories(!isCategories);
     if (item === "Tags") setIsTags(!isTags);
+    if (item === "Bookmarks") navigate('/bookmarks');
   };
 
   return (
