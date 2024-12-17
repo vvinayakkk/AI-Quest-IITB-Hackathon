@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
+import { useUser } from './UserProvider';
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
@@ -32,7 +33,7 @@ axios.interceptors.response.use(
 );
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const { setUser, setPosts, setNotifications, setBookmarks, } = useUser();
   const [isloggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -57,6 +58,9 @@ export function AuthProvider({ children }) {
         if (token && isTokenValid(token)) {
           const response = await axios.get(`${SERVER_URL}/user/profile`);
           setUser(response.data);
+          setPosts(response.data.posts);
+          setNotifications(response.data.notifications);
+          setBookmarks(response.data.bookmarks);
           setIsLoggedIn(true);
           setError(null);
         } else {
@@ -88,6 +92,9 @@ export function AuthProvider({ children }) {
       const profileResponse = await axios.get(`${SERVER_URL}/user/profile`);
       const userData = profileResponse.data;
       setUser(userData);
+      setPosts(userData.posts);
+      setNotifications(userData.notifications);
+      setBookmarks(userData.bookmarks);
       setIsLoggedIn(true);
       navigate('/dashboard');
       return userData;
@@ -123,6 +130,9 @@ export function AuthProvider({ children }) {
     try {
       const response = await axios.put(`${SERVER_URL}/user/profile`, profileData);
       setUser(response.data);
+      setPosts(response.data.posts);
+      setNotifications(response.data.notifications);
+      setBookmarks(response.data.bookmarks);
       return response.data;
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Profile update failed';
@@ -140,6 +150,9 @@ export function AuthProvider({ children }) {
     }
 
     setUser(null);
+    setPosts([]);
+    setNotifications([]);
+    setBookmarks([]);
     setError(null);
     setIsLoggedIn(false);
     localStorage.removeItem('token');
@@ -151,7 +164,6 @@ export function AuthProvider({ children }) {
   return (
     <AuthContext.Provider
       value={{
-        user,
         isLoading,
         isloggedIn,
         error,

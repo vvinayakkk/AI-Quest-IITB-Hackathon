@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 
 import { Bar, BarChart, Line, LineChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
-import { useAuth } from '../contexts/AuthContext';
+import { useUser } from '@/providers/UserProvider';
 
 
 const activityData = [
@@ -99,8 +99,8 @@ const sampleUser = {
   createdAt: new Date("2023-01-01")
 };
 
-export default function ProfilePage() {
-  const { user: authUser } = useAuth();
+const ProfilePage = () => {
+  const { user: authUser } = useUser();
 
   if (!authUser) {
     return (
@@ -392,3 +392,5 @@ export default function ProfilePage() {
     </motion.div>
   );
 };
+
+export default ProfilePage;

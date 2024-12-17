@@ -1,14 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
   SearchIcon, 
   ThumbsUpIcon, 
   MessageCircleIcon, 
   SendIcon, 
-  PlusIcon 
+  PlusIcon,
+  XIcon 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+
+const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
 // Comment Section Component
 const CommentSection = ({ postId, comments, onAddComment }) => {
@@ -20,7 +23,7 @@ const CommentSection = ({ postId, comments, onAddComment }) => {
 
     try {
       const response = await axios.post(
-        `http://localhost:3000/post/${postId}/comment`, 
+        `${SERVER_URL}/post/${postId}/comment`, 
         { content: newComment },
         {
           headers: { 
@@ -92,15 +95,83 @@ const CommentSection = ({ postId, comments, onAddComment }) => {
   );
 };
 
+// New ImageGrid component to replace ImageCarousel
+const ImageGrid = ({ images }) => {
+  const [selectedImage, setSelectedImage] = useState(null);
+
+  const getGridClass = (length) => {
+    switch (length) {
+      case 1: return "grid-cols-1 max-w-md mx-auto";
+      case 2: return "grid-cols-2";
+      case 3: return "grid-cols-3";
+      default: return "grid-cols-4";
+    }
+  };
+
+  return (
+    <>
+      <div className={`grid ${getGridClass(images.length)} gap-2 mt-4`}>
+        {images.slice(0, 4).map((image, index) => (
+          <div 
+            key={image.id} 
+            className="relative cursor-pointer aspect-[3/4]"
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent post navigation
+              setSelectedImage(image);
+            }}
+          >
+            <img 
+              src={image.data} 
+              alt={`Post image ${index + 1}`} 
+              className="w-full h-full object-cover rounded-lg"
+            />
+            {index === 3 && images.length > 4 && (
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg">
+                <span className="text-white text-xl font-bold">
+                  +{images.length - 4}
+                </span>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Full-size Image Modal */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
+          onClick={(e) => {
+            e.stopPropagation();
+            setSelectedImage(null);
+          }}
+        >
+          <button 
+            className="absolute top-4 right-4 text-white p-2"
+            onClick={() => setSelectedImage(null)}
+          >
+            <XIcon size={24} />
+          </button>
+          <img 
+            src={selectedImage.data} 
+            alt="Full size"
+            className="max-h-[90vh] max-w-[90vw] object-contain"
+          />
+        </div>
+      )}
+    </>
+  );
+};
+
 // Individual Post Component
 const HomePost = ({ post, onLikeToggle, onAddComment }) => {
+  const navigate = useNavigate();
   const [showComments, setShowComments] = useState(false);
   const [localPost, setLocalPost] = useState(post);
 
   const handleLikeToggle = async () => {
     try {
       const response = await axios.post(
-        `http://localhost:3000/post/${post._id}/like`,
+        `${SERVER_URL}/post/${post._id}/like`,
         {},
         {
           headers: { 
@@ -135,15 +206,25 @@ const HomePost = ({ post, onLikeToggle, onAddComment }) => {
     onAddComment?.(post._id, newComment);
   };
 
+  const handlePostClick = () => {
+    navigate(`/post/${post._id}`);
+  };
+
+  const handleActionClick = (e) => {
+    e.stopPropagation(); // Prevent navigation when clicking actions
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="bg-gray-800 rounded-lg p-4 space-y-3"
+      className="bg-gray-800 rounded-lg p-4 space-y-3 cursor-pointer 
+                hover:bg-gray-750 transition-colors duration-200"
+      onClick={handlePostClick}
     >
       {/* Post Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between" onClick={handleActionClick}>
         <div className="flex items-center space-x-3">
           {localPost.author?.avatar && (
             <img 
@@ -167,35 +248,32 @@ const HomePost = ({ post, onLikeToggle, onAddComment }) => {
 
       {/* Post Content */}
       <h2 className="text-xl font-bold text-white">{localPost.title}</h2>
-      
+      <p className="text-gray-300">{localPost.content}</p>
+
       {localPost.images && localPost.images.length > 0 && (
-        <div className="mt-4">
-          <img 
-            src={localPost.images[0].url || `data:image/jpeg;base64,${localPost.images[0].data}`} 
-            alt={localPost.title} 
-            className="w-full h-48 object-cover rounded-lg"
-          />
+        <div onClick={handleActionClick}>
+          <ImageGrid images={localPost.images} />
         </div>
       )}
-
-      <p className="text-gray-300 line-clamp-3">{localPost.content}</p>
 
       {/* Tags */}
-      {localPost.tags && localPost.tags.length > 0 && (
-        <div className="flex space-x-2">
-          {localPost.tags.map(tag => (
-            <span 
-              key={tag} 
-              className="px-2 py-1 bg-purple-500/20 text-purple-300 rounded-full text-xs"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-      )}
+      <div onClick={handleActionClick}>
+        {localPost.tags && localPost.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {localPost.tags.map(tag => (
+              <span 
+                key={tag} 
+                className="px-2 py-1 bg-purple-500/20 text-purple-300 rounded-full text-xs"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Post Actions */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between" onClick={handleActionClick}>
         <div className="flex items-center space-x-4">
           <button 
             onClick={handleLikeToggle}
@@ -203,7 +281,7 @@ const HomePost = ({ post, onLikeToggle, onAddComment }) => {
           >
             <ThumbsUpIcon 
               className={
-                localPost.likes?.includes(localPost.author?._id) 
+                localPost.likes?.includes(localStorage.getItem('userId'))
                   ? 'text-purple-500 fill-current' 
                   : ''
               } 
@@ -223,11 +301,13 @@ const HomePost = ({ post, onLikeToggle, onAddComment }) => {
 
       {/* Comments Section */}
       {showComments && (
-        <CommentSection 
-          postId={localPost._id} 
-          comments={localPost.comments || []} 
-          onAddComment={handleAddComment}
-        />
+        <div onClick={handleActionClick}>
+          <CommentSection 
+            postId={localPost._id} 
+            comments={localPost.comments || []} 
+            onAddComment={handleAddComment}
+          />
+        </div>
       )}
     </motion.div>
   );
@@ -245,12 +325,15 @@ const Home = () => {
   const fetchPosts = async (search = '') => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:3000/post', {
+      const response = await axios.get(`${SERVER_URL}/post`, {
         params: { search },
         headers: { 
           'Authorization': `Bearer ${localStorage.getItem('token')}` 
         }
       });
+
+      console.log('Fetched posts:', response.data.data);
+      
 
       setPosts(response.data.data || []);
       setLoading(false);

@@ -17,7 +17,7 @@ const getNotificationIcon = (type) => {
   }
 }
 
-export const NotificationItem = ({ notification, onRead }) => {
+const NotificationItem = ({ notification, onRead }) => {
   const { _id, type, message, read, postId, createdAt } = notification
 
   return (
@@ -47,3 +47,5 @@ export const NotificationItem = ({ notification, onRead }) => {
     </div>
   )
 }
+
+export { NotificationItem };

@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
-export default function CreatePostModal({ isOpen, onClose }) {
+const CreatePostModal = ({ isOpen, onClose }) => {
   const [newPost, setNewPost] = useState({
     title: '',
     content: '',
@@ -43,16 +43,16 @@ export default function CreatePostModal({ isOpen, onClose }) {
 
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
-    
+
     files.forEach(file => {
       if (file.type.startsWith('image/')) {
         const reader = new FileReader();
         reader.onloadend = () => {
           setNewPost(prev => ({
             ...prev,
-            images: [...prev.images, { 
+            images: [...prev.images, {
               id: Date.now(),
-              data: reader.result 
+              data: reader.result
             }]
           }));
         };
@@ -98,9 +98,9 @@ export default function CreatePostModal({ isOpen, onClose }) {
           <h2 className="text-2xl font-bold text-white bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
             Create a New Post
           </h2>
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={onClose}
             className="text-gray-400 hover:text-white hover:bg-gray-800"
           >
@@ -136,13 +136,13 @@ export default function CreatePostModal({ isOpen, onClose }) {
             />
             <div className="flex flex-wrap gap-1.5">
               {newPost.tags.map(tag => (
-                <span 
+                <span
                   key={tag}
                   className="bg-purple-500/10 text-purple-300 px-2 py-0.5 text-xs rounded-full flex items-center gap-1 border border-purple-500/20"
                 >
                   #{tag}
-                  <XCircle 
-                    className="h-3 w-3 cursor-pointer hover:text-purple-400" 
+                  <XCircle
+                    className="h-3 w-3 cursor-pointer hover:text-purple-400"
                     onClick={() => removeTag(tag)}
                   />
                 </span>
@@ -196,8 +196,8 @@ export default function CreatePostModal({ isOpen, onClose }) {
             )}
           </div>
 
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium py-2.5 shadow-lg shadow-purple-500/20"
           >
             Publish Post
@@ -207,3 +207,5 @@ export default function CreatePostModal({ isOpen, onClose }) {
     </motion.div>
   );
 }
+
+export default CreatePostModal;

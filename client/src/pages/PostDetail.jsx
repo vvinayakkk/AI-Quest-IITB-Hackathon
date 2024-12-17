@@ -9,7 +9,7 @@ import { samplePosts } from "@/assets/sampleData" // Import samplePosts
 import { Navigate, useParams } from "react-router-dom" // Import useParams
 import { Loader2 } from "lucide-react" // Add this import
 
-export default function PostDetail() {
+const PostDetail = () => {
   const { id } = useParams() // Get post id from URL
   const [post, setPost] = useState(null) // Initialize state
   const [replies, setReplies] = useState([])
@@ -54,8 +54,8 @@ export default function PostDetail() {
   }
 
   const handleVote = (replyId, value) => {
-    setReplies(replies.map(reply => 
-      reply.id === replyId 
+    setReplies(replies.map(reply =>
+      reply.id === replyId
         ? { ...reply, votes: reply.votes + value }
         : reply
     ))
@@ -63,8 +63,8 @@ export default function PostDetail() {
 
   // Add flag handler
   const handleFlag = (replyId) => {
-    setReplies(replies.map(reply => 
-      reply.id === replyId 
+    setReplies(replies.map(reply =>
+      reply.id === replyId
         ? { ...reply, flagged: !reply.flagged }
         : reply
     ))
@@ -72,8 +72,8 @@ export default function PostDetail() {
 
   // Add verify handler
   const handleVerify = (replyId) => {
-    setReplies(replies.map(reply => 
-      reply.id === replyId 
+    setReplies(replies.map(reply =>
+      reply.id === replyId
         ? { ...reply, verified: !reply.verified }
         : reply
     ))
@@ -93,28 +93,28 @@ export default function PostDetail() {
     // Department verified answers have highest priority
     if (a.verified && !b.verified) return -1;
     if (!a.verified && b.verified) return 1;
-    
+
     // AI answers come next
     if (a.type === 'ai' && b.type !== 'ai') return -1;
     if (a.type !== 'ai' && b.type === 'ai') return 1;
-    
+
     // Then sort by votes
     return b.votes - a.votes;
   });
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className="max-w-4xl mx-auto py-8 px-4 min-h-screen"
     >
       <div className="space-y-6">
-        <Post 
+        <Post
           post={post} // Use post from samplePosts
           onDelete={handleDeletePost}
           isOwnPost={post.author.id === 'currentUserId'} // Check ownership
         />
-        
+
         <AnimatePresence mode="popLayout">
           {sortedReplies.map((reply, index) => (
             <motion.div
@@ -124,7 +124,7 @@ export default function PostDetail() {
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ delay: index * 0.1 }}
             >
-              <Reply 
+              <Reply
                 reply={reply}
                 onVote={handleVote}
                 onFlag={handleFlag}
@@ -142,3 +142,5 @@ export default function PostDetail() {
     </motion.div>
   )
 }
+
+export default PostDetail;

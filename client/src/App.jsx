@@ -1,25 +1,26 @@
 import { useEffect } from 'react';
 import { Outlet, Route, Routes, useNavigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
-import MainLayout from './layout/MainLayout';
+import { AuthProvider, useAuth } from '@/providers/AuthProvider';
+import { UserProvider, useUser } from '@/providers/UserProvider';
+import MainLayout from '@/layout/MainLayout';
 
-import AskQuestion from '@/pages/AskQuestion';
-import CategoriesPage from './pages/CategoriesPage';
-import Home from './pages/Home';
-import LandingPage from './pages/LandingPage';
-import LoginPage from './pages/LoginPage';
-import NotificationsPage from './pages/NotificationPage';
-import PostDetail from './pages/PostDetail';
-import ProfilePage from './pages/ProfilePage';
-import SignupPage from './pages/SignupPage';
+import CategoriesPage from '@/pages/CategoriesPage';
+import Home from '@/pages/Home';
+import LandingPage from '@/pages/LandingPage';
+import LoginPage from '@/pages/LoginPage';
+import NotificationsPage from '@/pages/NotificationPage';
+import PostDetail from '@/pages/PostDetail';
+import ProfilePage from '@/pages/ProfilePage';
+import SignupPage from '@/pages/SignupPage';
 import TagsPage from '@/pages/TagsPage';
 import AskGenie from '@/pages/AskGenie';
 
 import { Loader2 } from 'lucide-react';
 
 const ProtectedRoute = () => {
-  const { user, isLoading } = useAuth();
+  const { user } = useUser();
+  const { isLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -41,31 +42,32 @@ const ProtectedRoute = () => {
 
 const App = () => {
   return (
-    <AuthProvider>
-      <div>
-        <Toaster position="bottom-right" richColors />
-        <Routes>
-          {/* Routes without Layout */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/login" element={<LoginPage />} />
+    <UserProvider>
+      <AuthProvider>
+        <div>
+          <Toaster position="bottom-right" richColors />
+          <Routes>
+            {/* Routes without Layout */}
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/login" element={<LoginPage />} />
 
-          {/* Routes with Layout */}
-          <Route element={<ProtectedRoute />}>
-            <Route element={<MainLayout />}>
-              <Route path="/home" element={<Home />} />
-              <Route path="/post/:id" element={<PostDetail />} />
-              <Route path="/qa-ask" element={<AskQuestion />} />
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/tags" element={<TagsPage />} />
-              <Route path="/notifications" element={<NotificationsPage />} />
-              <Route path="/categories" element={<CategoriesPage />} />
-              <Route path="/genie" element={<AskGenie />} />
+            {/* Routes with Layout */}
+            <Route element={<ProtectedRoute />}>
+              <Route element={<MainLayout />}>
+                <Route path="/home" element={<Home />} />
+                <Route path="/post/:id" element={<PostDetail />} />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/tags" element={<TagsPage />} />
+                <Route path="/notifications" element={<NotificationsPage />} />
+                <Route path="/categories" element={<CategoriesPage />} />
+                <Route path="/genie" element={<AskGenie />} />
+              </Route>
             </Route>
-          </Route>
-        </Routes>
-      </div>
-    </AuthProvider>
+          </Routes>
+        </div>
+      </AuthProvider>
+    </UserProvider>
   );
 };
 

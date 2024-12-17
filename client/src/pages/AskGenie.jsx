@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useAuth } from '@/contexts/AuthContext';
+import { useUser } from '@/providers/UserProvider';
 
 // Simulated bot responses
 const simulatedResponses = [
@@ -60,7 +60,7 @@ const Message = ({ message, isBot, user }) => (
 );
 
 const AskGenie = () => {
-  const { user } = useAuth();
+  const { user } = useUser();
   const [messages, setMessages] = useState([
     { text: "Hi! I'm Genie, your AI assistant. How can I help you today?", isBot: true }
   ]);

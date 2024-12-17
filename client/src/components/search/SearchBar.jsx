@@ -1,5 +1,3 @@
-import React from 'react';
-
 export const SearchBar = ({ className = '', mobile = false }) => (
   <div className={`relative w-full ${className}`}>
     <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">

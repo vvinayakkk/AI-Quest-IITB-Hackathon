@@ -4,9 +4,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { NotificationItem } from "@/components/NotificationItem"
-import { useAuth } from "@/contexts/AuthContext"
 import { toast } from "sonner"
-import { useEffect, useState } from "react"
+import { useUser } from "@/providers/UserProvider"
 
 const markAllAsRead = (setNotifications) => {
   setNotifications(prev => prev.map(n => ({ ...n, read: true })))
@@ -21,15 +20,8 @@ const markAsRead = (_id, setNotifications) => {
 
 const getUnreadCount = (notifications) => notifications.filter(n => !n.read).length
 
-export default function NotificationsPage() {
-  const { user, isLoading } = useAuth();
-  const [notifications, setNotifications] = useState([]);
-
-  useEffect(() => {
-    if (!isLoading && user?.notifications) {
-      setNotifications(user.notifications);
-    }
-  }, [user, isLoading]);
+const NotificationsPage = () => {
+  const { notifications, setNotifications } = useUser();
 
   return (
     <Card className="w-full max-w-3xl my-6 mx-auto bg-background/80 border-purple-500/20 text-text">
@@ -72,3 +64,5 @@ export default function NotificationsPage() {
   )
 }
 
+
+export default NotificationsPage

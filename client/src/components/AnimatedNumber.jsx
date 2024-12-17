@@ -32,6 +32,6 @@ const AnimatedNumber = ({ end, minDuration = 1000, maxDuration = 3000 }) => {
   }, [end, duration, number]);
 
   return <span>{number}</span>;
-};
+}
 
 export default AnimatedNumber;

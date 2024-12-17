@@ -1,19 +1,25 @@
-import { useState } from 'react';
-import { UserProfileButton } from './UserProfileButton';
-import { useAuth } from '../contexts/AuthContext';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/providers/AuthProvider';
+import { useUser } from '@/providers/UserProvider';
 import { SearchBar } from './search/SearchBar';
+import { UserProfileButton } from './UserProfileButton';
 import { NavigationLink, navigationItems } from './navigation/NavigationItems';
 import { VideoModal } from './modals/VideoModal';
 import AskQuestion from '@/pages/AskQuestion';
-import { useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
-  const { user, logout } = useAuth();
-  const [notificationCount] = useState(user.notifications.filter(n => !n.read).length);
+  const { logout } = useAuth();
+  const { user, notifications } = useUser();
+  const [notificationCount, setNotificationCount] = useState(0);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setNotificationCount(notifications.filter(n => !n.read).length);
+  }, [notifications]);
 
   const handleLogout = () => {
     logout();

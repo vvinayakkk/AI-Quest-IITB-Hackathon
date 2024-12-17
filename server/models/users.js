@@ -151,6 +151,12 @@ const usersSchema = new mongoose.Schema(
         ref: "Post",
       },
     ],
+    bookmarks: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Post",
+      },
+    ],
     notifications: [notificationSchema],
     createdAt: {
       type: Date,

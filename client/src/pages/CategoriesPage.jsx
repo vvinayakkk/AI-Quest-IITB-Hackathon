@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Code2, Database, FileCode2, Globe2, Laptop2, Layers, Lock, Server, Smartphone } from "lucide-react"
 
@@ -68,18 +67,18 @@ const categories = [
   }
 ]
 
-export default function CategoriesPage() {
+const CategoriesPage = () => {
   return (
     <div className="flex ml-[330px] flex-col gap-6 p-6 bg-background min-h-screen">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold text-text">Categories</h1>
         <p className="text-text/80">Browse questions by category</p>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {categories.map((category, i) => (
-          <Card 
-            key={i} 
+          <Card
+            key={i}
             className="bg-foreground border-dashed border border-accent text-text hover:shadow-lg transition-shadow cursor-pointer"
           >
             <CardHeader className="flex flex-row items-center gap-4">
@@ -101,4 +100,6 @@ export default function CategoriesPage() {
       </div>
     </div>
   )
-}
+};
+
+export default CategoriesPage;

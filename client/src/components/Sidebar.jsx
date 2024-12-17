@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import * as Tabs from "@radix-ui/react-tabs";
 import { useNavigate } from 'react-router-dom';
 import { ChevronDownIcon, HomeIcon, BookmarkIcon, LayersIcon, TagIcon, UserIcon, Bot } from 'lucide-react';

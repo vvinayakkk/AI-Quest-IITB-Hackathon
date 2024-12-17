@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import { SearchIcon, ThumbsUpIcon, MessageCircleIcon, SendIcon , PlusIcon} from 'lucide-react';
+import { SearchIcon, ThumbsUpIcon, MessageCircleIcon, SendIcon, PlusIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AuthContext,useAuth } from '../context/AuthContext'; // Assume you have an AuthContext
+import { useUser } from '@/providers/UserProvider';
 
 const CommentSection = ({ postId, comments, onAddComment }) => {
   const [newComment, setNewComment] = useState('');
-  const { user } = useAuth();
+  const { user } = useUser();
 
   const handleSubmitComment = async (e) => {
     e.preventDefault();
@@ -14,11 +14,11 @@ const CommentSection = ({ postId, comments, onAddComment }) => {
 
     try {
       const response = await axios.post(
-        `http://localhost:3000/post/${postId}/comment`, 
+        `http://localhost:3000/post/${postId}/comment`,
         { content: newComment },
         {
-          headers: { 
-            'Authorization': `Bearer ${localStorage.getItem('token')}` 
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
         }
       );
@@ -39,16 +39,16 @@ const CommentSection = ({ postId, comments, onAddComment }) => {
         {comments.map(comment => (
           <div key={comment._id} className="flex items-start space-x-2">
             {comment.user?.avatar && (
-              <img 
-                src={comment.user.avatar} 
-                alt={`${comment.user.firstName} ${comment.user.lastName}`} 
+              <img
+                src={comment.user.avatar}
+                alt={`${comment.user.firstName} ${comment.user.lastName}`}
                 className="w-8 h-8 rounded-full object-cover"
               />
             )}
             <div className="bg-gray-700 rounded-lg px-3 py-2">
               <p className="text-white font-medium text-sm">
-                {comment.user 
-                  ? `${comment.user.firstName} ${comment.user.lastName}` 
+                {comment.user
+                  ? `${comment.user.firstName} ${comment.user.lastName}`
                   : 'Unknown User'}
               </p>
               <p className="text-gray-300 text-sm">{comment.content}</p>
@@ -61,7 +61,7 @@ const CommentSection = ({ postId, comments, onAddComment }) => {
       </div>
 
       <form onSubmit={handleSubmitComment} className="flex items-center space-x-2">
-        <input 
+        <input
           type="text"
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
@@ -69,8 +69,8 @@ const CommentSection = ({ postId, comments, onAddComment }) => {
           className="flex-grow px-3 py-2 rounded-lg bg-gray-800 text-white 
                      placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
         />
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           className="bg-purple-600 text-white p-2 rounded-full hover:bg-purple-700 
                      transition-colors disabled:opacity-50"
           disabled={!newComment.trim()}
@@ -85,7 +85,7 @@ const CommentSection = ({ postId, comments, onAddComment }) => {
 const HomePost = ({ post, onLikeToggle }) => {
   const [showComments, setShowComments] = useState(false);
   const [localPost, setLocalPost] = useState(post);
-  const { user } = useContext(AuthContext);
+  const { user } = useUser();
 
   const handleLikeToggle = async () => {
     try {
@@ -93,17 +93,17 @@ const HomePost = ({ post, onLikeToggle }) => {
         `http://localhost:3000/post/${post._id}/like`,
         {},
         {
-          headers: { 
-            'Authorization': `Bearer ${localStorage.getItem('token')}` 
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
         }
       );
-      
+
       if (response.data.success) {
         setLocalPost(prev => ({
           ...prev,
-          likes: response.data.data.isLiked 
-            ? [...(prev.likes || []), user.id] 
+          likes: response.data.data.isLiked
+            ? [...(prev.likes || []), user.id]
             : (prev.likes || []).filter(id => id !== user.id)
         }));
         onLikeToggle?.(post._id, response.data.data);
@@ -126,16 +126,16 @@ const HomePost = ({ post, onLikeToggle }) => {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           {localPost.author?.avatar && (
-            <img 
-              src={localPost.author.avatar} 
-              alt={`${localPost.author.firstName} ${localPost.author.lastName}`} 
+            <img
+              src={localPost.author.avatar}
+              alt={`${localPost.author.firstName} ${localPost.author.lastName}`}
               className="w-10 h-10 rounded-full object-cover"
             />
           )}
           <div>
             <p className="text-white font-medium">
-              {localPost.author 
-                ? `${localPost.author.firstName} ${localPost.author.lastName}` 
+              {localPost.author
+                ? `${localPost.author.firstName} ${localPost.author.lastName}`
                 : 'Unknown Author'}
             </p>
             <p className="text-gray-400 text-sm">
@@ -146,12 +146,12 @@ const HomePost = ({ post, onLikeToggle }) => {
       </div>
 
       <h2 className="text-xl font-bold text-white">{localPost.title}</h2>
-      
+
       {localPost.images && localPost.images.length > 0 && (
         <div className="mt-4">
-          <img 
-            src={localPost.images[0].url || `data:image/jpeg;base64,${localPost.images[0].data}`} 
-            alt={localPost.title} 
+          <img
+            src={localPost.images[0].url || `data:image/jpeg;base64,${localPost.images[0].data}`}
+            alt={localPost.title}
             className="w-full h-48 object-cover rounded-lg"
           />
         </div>
@@ -162,8 +162,8 @@ const HomePost = ({ post, onLikeToggle }) => {
       {localPost.tags && localPost.tags.length > 0 && (
         <div className="flex space-x-2">
           {localPost.tags.map(tag => (
-            <span 
-              key={tag} 
+            <span
+              key={tag}
               className="px-2 py-1 bg-purple-500/20 text-purple-300 rounded-full text-xs"
             >
               {tag}
@@ -174,17 +174,17 @@ const HomePost = ({ post, onLikeToggle }) => {
 
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <button 
+          <button
             onClick={handleLikeToggle}
             className="flex items-center space-x-2 text-gray-400 hover:text-white"
           >
-            <ThumbsUpIcon 
-              className={`${localPost.likes?.includes(user.id) ? 'text-purple-500 fill-current' : ''}`} 
-              size={18} 
+            <ThumbsUpIcon
+              className={`${localPost.likes?.includes(user.id) ? 'text-purple-500 fill-current' : ''}`}
+              size={18}
             />
             <span>{localPost.likes?.length || 0}</span>
           </button>
-          <button 
+          <button
             onClick={() => setShowComments(!showComments)}
             className="flex items-center space-x-2 text-gray-400 hover:text-white"
           >
@@ -195,9 +195,9 @@ const HomePost = ({ post, onLikeToggle }) => {
       </div>
 
       {showComments && (
-        <CommentSection 
-          postId={localPost._id} 
-          comments={localPost.comments || []} 
+        <CommentSection
+          postId={localPost._id}
+          comments={localPost.comments || []}
           onAddComment={handleAddComment}
         />
       )}
@@ -224,8 +224,8 @@ const Home = () => {
       setLoading(true);
       const response = await axios.get('http://localhost:3000/post', {
         params: { search, page },
-        headers: { 
-          'Authorization': `Bearer ${localStorage.getItem('token')}` 
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
 
@@ -241,18 +241,20 @@ const Home = () => {
       console.error('Detailed error:', err);
       setError(err.response?.data?.message || 'Failed to fetch posts');
       setLoading(false);
-      setPosts([]); 
+      setPosts([]);
     }
   };
 
   // Handle like toggle in the posts list
   const handleLikeToggle = (postId, likeData) => {
-    setPosts(prevPosts => 
-      prevPosts.map(post => 
-        post._id === postId 
-          ? { ...post, likes: likeData.isLiked 
-              ? [...(post.likes || []), user.id] 
-              : (post.likes || []).filter(id => id !== user.id) }
+    setPosts(prevPosts =>
+      prevPosts.map(post =>
+        post._id === postId
+          ? {
+            ...post, likes: likeData.isLiked
+              ? [...(post.likes || []), user.id]
+              : (post.likes || []).filter(id => id !== user.id)
+          }
           : post
       )
     );
@@ -299,7 +301,7 @@ const Home = () => {
     return (
       <div className="max-w-3xl mx-auto py-4 sm:py-8 px-3 sm:px-4 text-red-500 bg-gray-900 min-h-screen">
         <p>Error: {error}</p>
-        <button 
+        <button
           onClick={() => fetchPosts()}
           className="mt-4 px-4 py-2 bg-purple-600 text-white rounded"
         >
@@ -326,8 +328,8 @@ const Home = () => {
                      transition-all duration-300
                      backdrop-blur-sm"
           />
-          <SearchIcon className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400" 
-                     size={18} />
+          <SearchIcon className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400"
+            size={18} />
         </div>
       </div>
 
@@ -340,8 +342,8 @@ const Home = () => {
             className="text-center py-8"
           >
             <p className="text-gray-400">
-              {searchTerm 
-                ? `No posts found matching "${searchTerm}"` 
+              {searchTerm
+                ? `No posts found matching "${searchTerm}"`
                 : "No posts available"}
             </p>
           </motion.div>
@@ -349,9 +351,9 @@ const Home = () => {
           <>
             <div className="space-y-4 sm:space-y-6">
               {posts.map(post => (
-                <HomePost 
-                  key={post._id} 
-                  post={post} 
+                <HomePost
+                  key={post._id}
+                  post={post}
                   onLikeToggle={handleLikeToggle}
                 />
               ))}
@@ -385,8 +387,8 @@ const Home = () => {
 
       {/* Create Post Button */}
       <div className="fixed bottom-6 right-6 z-20">
-        <button 
-          onClick={() => navigate('/create-post')} 
+        <button
+          onClick={() => navigate('/create-post')}
           className="bg-purple-600 text-white p-4 rounded-full 
                      shadow-lg hover:bg-purple-700 transition-colors 
                      flex items-center justify-center"

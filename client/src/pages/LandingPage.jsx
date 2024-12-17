@@ -1,9 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Users, MessageCircle, Award, Search, Github, BookOpen, ChevronRight, Star, Shield, Brain, ChevronLeft, Calendar } from 'lucide-react';
 import BackgroundAnimation from '@/components/BackgroundAnimation';
 import AnimatedCounter from '@/components/AnimatedCounter';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useUser } from '@/providers/UserProvider';
 
 // Blog posts data
 const blogPosts = [
@@ -187,7 +187,7 @@ const ReviewCarousel = ({ reviews }) => {
 const LandingPage = () => {
   const [isVisible, setIsVisible] = useState(false);
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user } = useUser();
 
   useEffect(() => {
     setIsVisible(true);
@@ -210,12 +210,15 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <span className="text-2xl font-bold bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
-                AskGenie
-              </span>
+              <a href="/" className="flex items-center space-x-3 rtl:space-x-reverse">
+                {/* <img src="/logo.png" className="h-8" alt="QA Logo" /> */}
+                <span className="text-2xl font-bold bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+                  AskGenie
+                </span>
+              </a>
             </div>
             <div className="flex items-center">
-              <button 
+              <button
                 onClick={handleAuthAction}
                 className="px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:scale-105 transition-all duration-300 shadow-lg shadow-indigo-500/25"
               >
@@ -237,7 +240,7 @@ const LandingPage = () => {
               Harness the power of AI to transform your team's knowledge sharing
             </p>
             <div className="flex justify-center space-x-4">
-              <button 
+              <button
                 className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg hover:scale-105 transition-all duration-300 shadow-lg shadow-indigo-500/25 flex items-center group"
                 onClick={handleAuthAction}
               >

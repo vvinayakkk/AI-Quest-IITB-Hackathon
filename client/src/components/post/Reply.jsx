@@ -1,11 +1,11 @@
+import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Share2, Flag, AlertCircle, BadgeCheck, ArrowUp, ArrowDown, Star, Trash2 } from 'lucide-react'
-import { useState } from "react"
 import { formatTimeAgo, formatUTCTimestamp } from "@/utils/dateUtils"
 
-export default function Reply({ reply, onVote, onFlag, onVerify, onDelete, isOwnReply }) {
+const Reply = ({ reply, onVote, onFlag, onVerify, onDelete, isOwnReply }) => {
   const [liked, setLiked] = useState(false)
   const [voteStatus, setVoteStatus] = useState(null)
 
@@ -63,13 +63,12 @@ export default function Reply({ reply, onVote, onFlag, onVerify, onDelete, isOwn
   }
 
   return (
-    <Card className={`${
-      reply.verified && reply.type === 'department'
+    <Card className={`${reply.verified && reply.type === 'department'
         ? 'bg-green-900/20 border-green-500/20 hover:shadow-green-500/10'
         : reply.type === 'ai'
           ? 'bg-blue-900/30 border-blue-500/20 hover:shadow-blue-500/10'
           : 'bg-gray-900/95 border-purple-500/20 hover:shadow-purple-500/10'
-    } backdrop-blur relative hover:shadow-lg transition-all duration-300`}>
+      } backdrop-blur relative hover:shadow-lg transition-all duration-300`}>
       {reply.flagged && (
         <div className="absolute top-0 right-0 m-2">
           <span className="bg-red-500/20 text-red-400 px-2 py-1 rounded-full text-xs flex items-center gap-1">
@@ -161,3 +160,5 @@ export default function Reply({ reply, onVote, onFlag, onVerify, onDelete, isOwn
     </Card>
   )
 }
+
+export default Reply
