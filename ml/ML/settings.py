@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'spam',
-    'wikipedia_scrape'
+    'wikipedia_scrape',
+    'github_integration'
 ]
 
 MIDDLEWARE = [
