@@ -38,12 +38,21 @@ const postSchema = new mongoose.Schema({
       message: 'Maximum 5 tags are allowed'
     }
   },
+  categories: {
+    type: [String],
+    validate: {
+      validator: function(tags) {
+        return tags.length <= 5;
+      },
+      message: 'Maximum 5 categories are allowed'
+    }
+  },
   images: [{
     id: { 
       type: String, 
       required: true 
     },
-    data: {
+    url: {
       type: String,
       required: true
     },

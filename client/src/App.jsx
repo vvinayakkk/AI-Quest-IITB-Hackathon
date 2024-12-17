@@ -6,7 +6,7 @@ import { UserProvider, useUser } from '@/providers/UserProvider';
 import MainLayout from '@/layout/MainLayout';
 
 import CategoriesPage from '@/pages/CategoriesPage';
-import Home from '@/pages/Home';
+import HomePage from '@/pages/Home';
 import LandingPage from '@/pages/LandingPage';
 import LoginPage from '@/pages/LoginPage';
 import NotificationsPage from '@/pages/NotificationPage';
@@ -55,7 +55,7 @@ const App = () => {
             {/* Routes with Layout */}
             <Route element={<ProtectedRoute />}>
               <Route element={<MainLayout />}>
-                <Route path="/home" element={<Home />} />
+                <Route path="/home" element={<HomePage />} />
                 <Route path="/post/:id" element={<PostDetail />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/tags" element={<TagsPage />} />

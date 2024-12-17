@@ -37,8 +37,7 @@ const createPost = async (req, res) => {
     // Process images with base64 or URL support
     const processedImages = images.map(image => ({
       id: `img_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      data: image.data || null,
-      url: image.url || null,
+      url: image.data || null,
       uploadedAt: new Date()
     }));
 

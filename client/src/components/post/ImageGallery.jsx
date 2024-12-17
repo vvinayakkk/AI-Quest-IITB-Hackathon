@@ -1,11 +1,10 @@
-
 import { useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { ChevronLeft, ChevronRight, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-export default function ImageGallery({ images }) {
+const ImageGallery = ({ images }) => {
   const [selectedImage, setSelectedImage] = useState(null)
   const [currentIndex, setCurrentIndex] = useState(0)
 
@@ -34,7 +33,7 @@ export default function ImageGallery({ images }) {
           >
             <img
               src={image.url}
-              alt={image.alt || "Post image"}
+              alt={"Post image"}
               className="w-full h-full object-cover"
             />
           </motion.div>
@@ -46,7 +45,7 @@ export default function ImageGallery({ images }) {
           <div className="relative h-[80vh]">
             <img
               src={images[currentIndex]?.url}
-              alt={images[currentIndex]?.alt || "Post image"}
+              alt={"Post image"}
               className="w-full h-full object-contain"
             />
             <Button
@@ -65,17 +64,19 @@ export default function ImageGallery({ images }) {
             >
               <ChevronRight className="h-8 w-8" />
             </Button>
-            <Button
+            {/* <Button
               variant="ghost"
               size="icon"
               className="absolute right-2 top-2"
               onClick={() => setSelectedImage(null)}
             >
               <X className="h-6 w-6" />
-            </Button>
+            </Button> */}
           </div>
         </DialogContent>
       </Dialog>
     </>
   )
 }
+
+export default ImageGallery
