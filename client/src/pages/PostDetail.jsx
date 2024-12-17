@@ -1,95 +1,161 @@
+import { useState, useEffect } from "react"
+import { useParams, useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
-import { useState, useEffect } from "react" // Import useEffect
+import { Loader2 } from "lucide-react"
+import axios from 'axios'
+import { useUser } from "@/providers/UserProvider"
 import Post from "@/components/post/Post"
 import Reply from "@/components/post/Reply"
 import ReplyInput from "@/components/post/ReplyInput"
 import RelatedQuestions from "@/components/post/RelatedQuestions"
-import { getCurrentISOString } from "@/utils/dateUtils"
-import { samplePosts } from "@/assets/sampleData" // Import samplePosts
-import { Navigate, useParams } from "react-router-dom" // Import useParams
-import { Loader2 } from "lucide-react" // Add this import
+
+const SERVER_URL = import.meta.env.VITE_SERVER_URL
 
 const PostDetail = () => {
-  const { id } = useParams() // Get post id from URL
-  const [post, setPost] = useState(null) // Initialize state
-  const [replies, setReplies] = useState([])
-  const [isDeleted, setIsDeleted] = useState(false)
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const [post, setPost] = useState(null)
+  const [comments, setComments] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
-    const foundPost = samplePosts.find(p => p.id === id)
-    if (foundPost) {
-      setPost(foundPost)
-      setReplies(foundPost.replies)
-      setIsDeleted(false)
-    } else {
-      setIsDeleted(true)
+    fetchPost()
+  }, [id])
+
+  const fetchPost = async () => {
+    try {
+      setIsLoading(true)
+      const response = await axios.get(`${SERVER_URL}/post/${id}`)
+      const data = response.data.data
+      
+      setPost(data)
+      setComments(data?.comments || [])
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to fetch post')
+    } finally {
+      setIsLoading(false)
     }
-  }, [id]) // Update when id changes
-
-  // Hooks must be called unconditionally above this line
-
-  if (isDeleted) {
-    return <Navigate to="/404" /> // Redirect if post not found
   }
 
-  if (!post) {
+  const handleAddReply = async (content) => {
+    const tempReply = {
+      id: `temp-${Date.now()}`,
+      content,
+      author: 'CurrentUser',
+      votes: 0,
+      timestamp: new Date().toISOString(),
+      type: 'user'
+    }
+
+    setComments(prev => [...prev, tempReply])
+
+    try {
+      const { data: newReply } = await axios.post(`${SERVER_URL}/posts/${id}/replies`, { content })
+      setComments(prev => prev.map(reply =>
+        reply.id === tempReply.id ? newReply : reply
+      ))
+    } catch (err) {
+      setComments(prev => prev.filter(reply => reply.id !== tempReply.id))
+      console.error('Error adding reply:', err.response?.data?.message)
+    }
+  }
+
+  const handleVote = async (replyId, value) => {
+    setComments(prev => prev.map(reply =>
+      reply.id === replyId
+        ? { ...reply, votes: reply.votes + value }
+        : reply
+    ))
+
+    try {
+      const { data: updatedReply } = await axios.post(`${SERVER_URL}/replies/${replyId}/vote`, { value })
+      setComments(prev => prev.map(reply =>
+        reply.id === replyId ? updatedReply : reply
+      ))
+    } catch (err) {
+      setComments(prev => prev.map(reply =>
+        reply.id === replyId
+          ? { ...reply, votes: reply.votes - value }
+          : reply
+      ))
+      console.error('Error voting:', err.response?.data?.message)
+    }
+  }
+
+  const handleFlag = async (replyId) => {
+    setComments(prev => prev.map(reply =>
+      reply.id === replyId
+        ? { ...reply, flagged: !reply.flagged }
+        : reply
+    ))
+
+    try {
+      const { data: updatedReply } = await axios.post(`${SERVER_URL}/replies/${replyId}/flag`)
+      setComments(prev => prev.map(reply =>
+        reply.id === replyId ? updatedReply : reply
+      ))
+    } catch (err) {
+      setComments(prev => prev.map(reply =>
+        reply.id === replyId
+          ? { ...reply, flagged: !reply.flagged }
+          : reply
+      ))
+      console.error('Error flagging reply:', err.response?.data?.message)
+    }
+  }
+
+  const handleDeleteReply = async (replyId) => {
+    const deletedReply = comments.find(reply => reply.id === replyId)
+    setComments(prev => prev.filter(reply => reply.id !== replyId))
+
+    try {
+      await axios.delete(`${SERVER_URL}/replies/${replyId}`)
+    } catch (err) {
+      setComments(prev => [...prev, deletedReply])
+      console.error('Error deleting reply:', err.response?.data?.message)
+    }
+  }
+
+  const handleDeletePost = async () => {
+    const deletedPost = post
+    setIsLoading(true)
+    setPost(null)
+
+    try {
+      await axios.delete(`${SERVER_URL}/posts/${id}`)
+      navigate('/home')
+    } catch (err) {
+      setPost(deletedPost)
+      setIsLoading(false)
+      console.error('Error deleting post:', err.response?.data?.message)
+    }
+  }
+
+  if (isLoading) {
     return (
       <div className="text-center py-8">
         <Loader2 className="mx-auto h-8 w-8 animate-spin text-gray-400" />
         <p className="text-gray-400 mt-4">Loading post...</p>
       </div>
-    ) // Optional loading state
+    )
   }
 
-  const handleAddReply = (content) => {
-    const newReply = {
-      id: `r${replies.length + 1}`,
-      type: 'user',
-      author: 'CurrentUser',
-      content,
-      votes: 0,
-      timestamp: getCurrentISOString()
-    }
-    setReplies([...replies, newReply])
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-red-400">{error}</p>
+        <button
+          onClick={() => navigate('/posts')}
+          className="mt-4 text-purple-400 hover:text-purple-300"
+        >
+          Return to Posts
+        </button>
+      </div>
+    )
   }
 
-  const handleVote = (replyId, value) => {
-    setReplies(replies.map(reply =>
-      reply.id === replyId
-        ? { ...reply, votes: reply.votes + value }
-        : reply
-    ))
-  }
-
-  // Add flag handler
-  const handleFlag = (replyId) => {
-    setReplies(replies.map(reply =>
-      reply.id === replyId
-        ? { ...reply, flagged: !reply.flagged }
-        : reply
-    ))
-  }
-
-  // Add verify handler
-  const handleVerify = (replyId) => {
-    setReplies(replies.map(reply =>
-      reply.id === replyId
-        ? { ...reply, verified: !reply.verified }
-        : reply
-    ))
-  }
-
-  const handleDeleteReply = (replyId) => {
-    setReplies(replies.filter(reply => reply.id !== replyId))
-  }
-
-  const handleDeletePost = () => {
-    setIsDeleted(true)
-    // Here you would typically make an API call to delete the post
-    // and then redirect to the posts list
-  }
-
-  const sortedReplies = [...replies].sort((a, b) => {
+  const sortedReplies = [...comments].sort((a, b) => {
     // Department verified answers have highest priority
     if (a.verified && !b.verified) return -1;
     if (!a.verified && b.verified) return 1;
@@ -110,9 +176,8 @@ const PostDetail = () => {
     >
       <div className="space-y-6">
         <Post
-          post={post} // Use post from samplePosts
-          onDelete={handleDeletePost}
-          isOwnPost={post.author.id === 'currentUserId'} // Check ownership
+          post={post}
+          setPosts={null}
         />
 
         <AnimatePresence mode="popLayout">
@@ -128,19 +193,18 @@ const PostDetail = () => {
                 reply={reply}
                 onVote={handleVote}
                 onFlag={handleFlag}
-                onVerify={handleVerify}
                 onDelete={handleDeleteReply}
-                isOwnReply={reply.author === 'CurrentUser'} // Replace with actual user check
+                isOwnReply={reply.author === 'CurrentUser'}
               />
             </motion.div>
           ))}
         </AnimatePresence>
 
         <ReplyInput onSubmit={handleAddReply} />
-        <RelatedQuestions relatedQuestions={post.relatedQuestions} /> {/* Pass related questions */}
+        {post?.relatedQuestions && <RelatedQuestions relatedQuestions={post.relatedQuestions} />}
       </div>
     </motion.div>
   )
 }
 
-export default PostDetail;
+export default PostDetail

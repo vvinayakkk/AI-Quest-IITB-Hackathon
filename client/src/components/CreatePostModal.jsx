@@ -43,8 +43,12 @@ const CreatePostModal = ({ isOpen, onClose }) => {
 
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
+    const remainingSlots = 3 - newPost.images.length;
 
-    files.forEach(file => {
+    if (remainingSlots <= 0)
+      return;
+
+    files.slice(0, remainingSlots).forEach(file => {
       if (file.type.startsWith('image/')) {
         const reader = new FileReader();
         reader.onloadend = () => {
@@ -160,6 +164,7 @@ const CreatePostModal = ({ isOpen, onClose }) => {
               onChange={handleImageUpload}
               accept="image/*"
               multiple
+              disabled={newPost.images.length >= 3}
               className="hidden"
             />
             <Button
@@ -167,10 +172,14 @@ const CreatePostModal = ({ isOpen, onClose }) => {
               variant="outline"
               className="w-full border-gray-800 text-gray-400 hover:text-white hover:bg-gray-800/60"
               onClick={() => fileInputRef.current?.click()}
+              disabled={newPost.images.length >= 3}
             >
               <Upload className="h-4 w-4 mr-2" />
-              Upload Images
+              {newPost.images.length >= 3 ? 'Image limit reached' : 'Upload Images'}
             </Button>
+            <p className="text-xs text-gray-500">
+              {3 - newPost.images.length} image slots remaining (max 3)
+            </p>
 
             {newPost.images.length > 0 && (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">

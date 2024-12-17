@@ -4,7 +4,6 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { EmojiPickerButton } from "./reply-input/EmojiPickerButton"
-import { ActionButtons } from "./reply-input/ActionButtons"
 import { useReplyForm } from "@/hooks/useReplyForm"
 
 export default function ReplyInput({ onSubmit }) {
@@ -14,9 +13,6 @@ export default function ReplyInput({ onSubmit }) {
     isLoading,
     handleSubmit,
     addEmoji,
-    addMention,
-    addHashtag,
-    handleFileUpload
   } = useReplyForm(onSubmit)
 
   return (
@@ -48,11 +44,6 @@ export default function ReplyInput({ onSubmit }) {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <EmojiPickerButton onEmojiSelect={addEmoji} />
-                <ActionButtons
-                  onMention={addMention}
-                  onHashtag={addHashtag}
-                  onFileUpload={handleFileUpload}
-                />
               </div>
 
               <Button

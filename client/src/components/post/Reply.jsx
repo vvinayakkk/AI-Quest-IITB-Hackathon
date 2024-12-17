@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Share2, Flag, AlertCircle, BadgeCheck, ArrowUp, ArrowDown, Star, Trash2 } from 'lucide-react'
 import { formatTimeAgo, formatUTCTimestamp } from "@/utils/dateUtils"
 
-const Reply = ({ reply, onVote, onFlag, onVerify, onDelete, isOwnReply }) => {
+const Reply = ({ reply, onVote, onFlag, onDelete, isOwnReply }) => {
   const [liked, setLiked] = useState(false)
   const [voteStatus, setVoteStatus] = useState(null)
 
