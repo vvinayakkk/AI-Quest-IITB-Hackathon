@@ -13,7 +13,7 @@ const commentSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ["user", "department", "ai"],
+    enum: ["user", "correct", "ai"],
     default: "user",
   },
   upvotes: [
@@ -28,6 +28,23 @@ const commentSchema = new mongoose.Schema({
       ref: "Comment",
     },
   ],
+  flagged: {
+    type: {
+      status: {
+        type: Boolean,
+        default: false,
+      },
+      reason: {
+        type: String,
+        trim: true,
+      },
+      by: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Users",
+      },
+    },
+    default: false,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

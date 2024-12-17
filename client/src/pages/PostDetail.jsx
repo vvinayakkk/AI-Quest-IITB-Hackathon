@@ -5,19 +5,77 @@ import { Loader2 } from "lucide-react"
 import axios from 'axios'
 import { useUser } from "@/providers/UserProvider"
 import Post from "@/components/post/Post"
-import Reply from "@/components/post/Reply"
+import CommentCard from "@/components/post/CommentCard"
 import ReplyInput from "@/components/post/ReplyInput"
 import RelatedQuestions from "@/components/post/RelatedQuestions"
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL
 
+const replies = [
+  {
+    _id: "r8",
+    author: {
+      _id: "ai123",
+      firstName: "AI",
+      lastName: "Assistant",
+      fullName: "AI Assistant",
+      avatar: "/avatars/ai-assistant.jpg",
+      verified: true,
+      department: "AI"
+    },
+    content: "A smart contract is a program that runs on the Ethereum blockchain that facilitates the exchange of assets.",
+    type: "ai",
+    upvotes: [],
+    replies: [],
+    flagged: { status: false, reason: "", by: null },
+    createdAt: "2024-03-23T10:20:00Z"
+  },
+  {
+    _id: "r9",
+    author: {
+      _id: "tech123",
+      firstName: "Tech",
+      lastName: "Insights",
+      fullName: "Tech Insights",
+      avatar: "/avatars/techinsights.jpg",
+      verified: true,
+      department: "Technology"
+    },
+    content: "The update introduces improved transaction speeds and enhanced security features.",
+    type: "correct",
+    upvotes: [],
+    replies: [],
+    flagged: { status: false, reason: "", by: null },
+    createdAt: "2024-03-24T12:00:00Z"
+  },
+  {
+    _id: "r10",
+    author: {
+      _id: "block123",
+      firstName: "Blockchain",
+      lastName: "Fan",
+      fullName: "Blockchain Fan",
+      avatar: "/avatars/blockchainfan.jpg",
+      verified: false
+    },
+    content: "Yes, it also includes support for new scripting capabilities.",
+    type: "user",
+    upvotes: [],
+    replies: [],
+    flagged: { status: true, reason: "", by: null },
+    createdAt: "2024-03-24T12:05:00Z"
+  }
+]
+
 const PostDetail = () => {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { user } = useUser()
   const [post, setPost] = useState(null)
   const [comments, setComments] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
+
 
   useEffect(() => {
     fetchPost()
@@ -26,9 +84,13 @@ const PostDetail = () => {
   const fetchPost = async () => {
     try {
       setIsLoading(true)
-      const response = await axios.get(`${SERVER_URL}/post/${id}`)
+      const response = await axios.get(`${SERVER_URL}/post/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      })
       const data = response.data.data
-      
+
       setPost(data)
       setComments(data?.comments || [])
     } catch (err) {
@@ -38,97 +100,98 @@ const PostDetail = () => {
     }
   }
 
-  const handleAddReply = async (content) => {
-    const tempReply = {
-      id: `temp-${Date.now()}`,
+  const handleAddComment = async (content) => {
+    const tempComment = {
+      _id: `temp-${Date.now()}`,
       content,
-      author: 'CurrentUser',
-      votes: 0,
-      timestamp: new Date().toISOString(),
-      type: 'user'
+      author: user,
+      upvotes: 0,
+      createdAt: new Date().toISOString(),
     }
 
-    setComments(prev => [...prev, tempReply])
+    setComments(prev => [...prev, tempComment])
 
     try {
-      const { data: newReply } = await axios.post(`${SERVER_URL}/posts/${id}/replies`, { content })
-      setComments(prev => prev.map(reply =>
-        reply.id === tempReply.id ? newReply : reply
+      const response = await axios.post(
+        `${SERVER_URL}/post/${id}/comment`, 
+        { content },
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      )
+      setComments(prev => prev.map(comment =>
+        comment._id === tempComment._id ? response.data.data : comment
       ))
     } catch (err) {
-      setComments(prev => prev.filter(reply => reply.id !== tempReply.id))
-      console.error('Error adding reply:', err.response?.data?.message)
+      setComments(prev => prev.filter(comment => comment._id !== tempComment._id))
+      console.error('Error adding comment:', err.response?.data?.message)
     }
   }
 
-  const handleVote = async (replyId, value) => {
-    setComments(prev => prev.map(reply =>
-      reply.id === replyId
-        ? { ...reply, votes: reply.votes + value }
-        : reply
+  const handleVoteComment = async (commentId, value) => {
+    setComments(prev => prev.map(comment =>
+      comment._id === commentId
+        ? { ...comment, upvotes: comment.upvotes + value }
+        : comment
     ))
 
     try {
-      const { data: updatedReply } = await axios.post(`${SERVER_URL}/replies/${replyId}/vote`, { value })
-      setComments(prev => prev.map(reply =>
-        reply.id === replyId ? updatedReply : reply
-      ))
+      await axios.post(`${SERVER_URL}/comment/${commentId}/upvote`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      })
     } catch (err) {
-      setComments(prev => prev.map(reply =>
-        reply.id === replyId
-          ? { ...reply, votes: reply.votes - value }
-          : reply
+      setComments(prev => prev.map(comment =>
+        comment._id === commentId
+          ? { ...comment, upvotes: comment.upvotes - value }
+          : comment
       ))
       console.error('Error voting:', err.response?.data?.message)
     }
   }
 
-  const handleFlag = async (replyId) => {
-    setComments(prev => prev.map(reply =>
-      reply.id === replyId
-        ? { ...reply, flagged: !reply.flagged }
-        : reply
+  const handleFlagComment = async (commentId) => {
+    setComments(prev => prev.map(comment =>
+      comment._id === commentId
+        ? { ...comment, flagged: { ...comment.flagged, status: !comment.flagged.status } }
+        : comment
     ))
 
     try {
-      const { data: updatedReply } = await axios.post(`${SERVER_URL}/replies/${replyId}/flag`)
-      setComments(prev => prev.map(reply =>
-        reply.id === replyId ? updatedReply : reply
-      ))
+      // const { data: updatedComment } = await axios.post(`${SERVER_URL}/replies/${commentId}/flag`, {
+      //   headers: {
+      //     'Authorization': `Bearer ${localStorage.getItem('token')}`
+      //   }
+      // })
+      // setComments(prev => prev.map(comment =>
+      //   comment.id === commentId ? updatedComment : comment
+      // ))
     } catch (err) {
-      setComments(prev => prev.map(reply =>
-        reply.id === replyId
-          ? { ...reply, flagged: !reply.flagged }
-          : reply
+      setComments(prev => prev.map(comment =>
+        comment.id === commentId
+          ? { ...comment, flagged: !comment.flagged }
+          : comment
       ))
-      console.error('Error flagging reply:', err.response?.data?.message)
+      console.error('Error flagging comment:', err.response?.data?.message)
     }
   }
 
-  const handleDeleteReply = async (replyId) => {
-    const deletedReply = comments.find(reply => reply.id === replyId)
-    setComments(prev => prev.filter(reply => reply.id !== replyId))
+  const handleDeleteComment = async (commentId) => {
+    const deletedComment = comments.find(comment => comment._id === commentId)
+    setComments(prev => prev.filter(comment => comment._id !== commentId))
 
     try {
-      await axios.delete(`${SERVER_URL}/replies/${replyId}`)
+      await axios.delete(`${SERVER_URL}/comment/${commentId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      })
     } catch (err) {
-      setComments(prev => [...prev, deletedReply])
-      console.error('Error deleting reply:', err.response?.data?.message)
-    }
-  }
-
-  const handleDeletePost = async () => {
-    const deletedPost = post
-    setIsLoading(true)
-    setPost(null)
-
-    try {
-      await axios.delete(`${SERVER_URL}/posts/${id}`)
-      navigate('/home')
-    } catch (err) {
-      setPost(deletedPost)
-      setIsLoading(false)
-      console.error('Error deleting post:', err.response?.data?.message)
+      setComments(prev => [...prev, deletedComment])
+      console.error('Error deleting comment:', err.response?.data?.message)
     }
   }
 
@@ -155,14 +218,18 @@ const PostDetail = () => {
     )
   }
 
-  const sortedReplies = [...comments].sort((a, b) => {
-    // Department verified answers have highest priority
-    if (a.verified && !b.verified) return -1;
-    if (!a.verified && b.verified) return 1;
+  const sortedComments = replies.sort((a, b) => {
+    // Correct answers have highest priority
+    if (a.type === 'correct' && b.type !== 'correct') return -1;
+    if (a.type !== 'correct' && b.type === 'correct') return 1;
 
     // AI answers come next
     if (a.type === 'ai' && b.type !== 'ai') return -1;
     if (a.type !== 'ai' && b.type === 'ai') return 1;
+
+    // User answers come last
+    if (a.type === 'user' && b.type !== 'user') return -1;
+    if (a.type !== 'user' && b.type === 'user') return 1;
 
     // Then sort by votes
     return b.votes - a.votes;
@@ -181,26 +248,26 @@ const PostDetail = () => {
         />
 
         <AnimatePresence mode="popLayout">
-          {sortedReplies.map((reply, index) => (
+          {sortedComments.map((comment, index) => (
             <motion.div
-              key={reply.id}
+              key={comment._id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ delay: index * 0.1 }}
             >
-              <Reply
-                reply={reply}
-                onVote={handleVote}
-                onFlag={handleFlag}
-                onDelete={handleDeleteReply}
-                isOwnReply={reply.author === 'CurrentUser'}
+              <CommentCard
+                comment={comment}
+                postId={post._id}
+                onVote={handleVoteComment}
+                onFlag={handleFlagComment}
+                onDelete={handleDeleteComment}
               />
             </motion.div>
           ))}
         </AnimatePresence>
 
-        <ReplyInput onSubmit={handleAddReply} />
+        <ReplyInput onSubmit={handleAddComment} />
         {post?.relatedQuestions && <RelatedQuestions relatedQuestions={post.relatedQuestions} />}
       </div>
     </motion.div>
