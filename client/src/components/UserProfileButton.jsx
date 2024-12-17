@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router-dom';
 export const UserProfileButton = ({ user, onLogout }) => {
   const navigate = useNavigate();
   const initials = `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`;
-
+  const role = localStorage.getItem('role');
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="focus:outline-none">
@@ -54,6 +54,12 @@ export const UserProfileButton = ({ user, onLogout }) => {
         <DropdownMenuItem className="text-text" asChild>
           <div className="text-text" onClick={() => navigate('/profile')}>My Account</div>
         </DropdownMenuItem>
+        {
+          role !== "Member" && (<DropdownMenuItem className="text-text" asChild>
+            <div className="text-text" onClick={() => navigate('/moderate')}>Moderation Controls</div>
+          </DropdownMenuItem>)
+        }
+        
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={onLogout} className="text-red-500">
           Log out

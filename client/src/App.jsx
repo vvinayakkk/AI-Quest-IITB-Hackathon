@@ -20,6 +20,7 @@ import Bookmarks from '@/pages/Bookmarks';
 import MyPostsPage from '@/pages/MyPostsPage';
 
 import { Loader2 } from 'lucide-react';
+import Moderate from './pages/Moderate';
 
 const ProtectedRoute = () => {
   const { user } = useUser();
@@ -68,6 +69,7 @@ const App = () => {
                 <Route path="/genie" element={<AskGenie />} />
                 <Route path="/github" element={<GithubPage />} />
                 <Route path="/bookmarks" element={<Bookmarks />} />
+                <Route path="/moderate" element={<Moderate />} />
               </Route>
             </Route>
           </Routes>

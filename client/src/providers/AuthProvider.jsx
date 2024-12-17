@@ -96,6 +96,8 @@ export function AuthProvider({ children }) {
       setNotifications(userData.notifications);
       setBookmarks(userData.bookmarks);
       setIsLoggedIn(true);
+      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('role', userData.role);
       navigate('/dashboard');
       return userData;
     } catch (error) {

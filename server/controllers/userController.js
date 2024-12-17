@@ -195,4 +195,20 @@ const getBookmarks = async (req, res) => {
   }
 };
 
-export { getUserProfile, getUserPosts, bookmarkPost, getBookmarks };
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await Users.find().select("-password").sort({ createdAt: -1 });
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching users" });
+  }
+};
+
+
+export { 
+  getUserProfile, 
+  getUserPosts, 
+  bookmarkPost, 
+  getBookmarks, 
+  getAllUsers, 
+};
