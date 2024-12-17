@@ -1,16 +1,98 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { ChevronRight, ChevronDown, FileText, Folder } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import EnhancedSingleFileChatInterface from '@/components/AIChatGithub';
 
+const createFileTree = (files) => {
+  const tree = {};
+
+  files.forEach(filePath => {
+    const parts = filePath.split('/');
+    let current = tree;
+
+    parts.forEach((part, index) => {
+      if (index === parts.length - 1) {
+        if (!current.__files) current.__files = [];
+        current.__files.push(part);
+      } else {
+        if (!current[part]) current[part] = {};
+        current = current[part];
+      }
+    });
+  });
+
+  return tree;
+};
+
+const TreeNode = ({ name, node, depth = 0, onFileSelect, path = "" }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const hasChildren = Object.keys(node).length > 0 || (node.__files && node.__files.length > 0);
+
+  const toggleExpand = () => {
+    if (hasChildren) setIsExpanded(!isExpanded);
+  };
+
+  const currentPath = path ? `${path}/${name}` : name;
+
+  return (
+    <div className="pl-4">
+      <div 
+        className={`flex items-center cursor-pointer hover:bg-gray-700/30 rounded-lg p-2 
+          ${isExpanded ? 'bg-gray-700/30' : ''}`}
+        style={{ paddingLeft: `${depth * 16}px` }}
+        onClick={toggleExpand}
+      >
+        {hasChildren ? (
+          isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />
+        ) : <div className="w-4"></div>}
+        
+        {node.__files ? <FileText size={16} className="mr-2" /> : <Folder size={16} className="mr-2" />}
+        
+        <span>{name}</span>
+      </div>
+
+      {isExpanded && (
+        <div>
+          {Object.entries(node)
+            .filter(([key]) => key !== '__files')
+            .map(([folderName, folderNode]) => (
+              <TreeNode 
+                key={folderName} 
+                name={folderName} 
+                node={folderNode} 
+                depth={depth + 1}
+                onFileSelect={onFileSelect}
+                path={currentPath}
+              />
+            ))}
+          
+          {node.__files && node.__files.map(filename => (
+            <div 
+              key={filename}
+              className="flex items-center cursor-pointer hover:bg-gray-700/30 rounded-lg p-2"
+              style={{ paddingLeft: `${(depth + 1) * 16}px` }}
+              onClick={() => onFileSelect(`${currentPath}/${filename}`)}
+            >
+              <FileText size={16} className="mr-2" />
+              <span>{filename}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const GithubPage = () => {
   const [owner, setOwner] = useState('');
   const [repo, setRepo] = useState('');
   const [branch, setBranch] = useState('main');
   const [files, setFiles] = useState([]);
+  const [fileTree, setFileTree] = useState({});
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -36,7 +118,7 @@ const GithubPage = () => {
     setFileContent({});
 
     try {
-      const filesResponse = await fetch(
+      const response = await fetch(
         `https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`,
         {
           headers: {
@@ -45,16 +127,20 @@ const GithubPage = () => {
         }
       );
       
-      if (!filesResponse.ok) throw new Error('Failed to fetch repository files');
+      if (!response.ok) throw new Error('Failed to fetch repository files');
       
-      const filesData = await filesResponse.json();
-      const repoFiles = filesData.tree
+      const data = await response.json();
+      const allFiles = data.tree
         .filter(file => file.type === 'blob' && isTextFile(file.path))
         .map(file => file.path);
-      setFiles(repoFiles);
+      
+      setFiles(allFiles);
+      
+      // Create file tree after setting files
+      setFileTree(createFileTree(allFiles));
 
-      // Automatically fetch README if it exists
-      const readme = repoFiles.find(file => file.toLowerCase().includes('readme.md'));
+      // Find and load README if it exists
+      const readme = allFiles.find(file => file.toLowerCase().includes('readme.md'));
       if (readme) {
         handleFileSelect(readme);
       }
@@ -66,55 +152,37 @@ const GithubPage = () => {
     }
   };
 
-  const fetchFileContent = async (path) => {
+  const handleFileSelect = async (filePath) => {
     try {
-      const response = await fetch(
-        `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`
-      );
-      if (!response.ok) throw new Error('Failed to fetch file content');
-      const content = await response.text();
-      return content;
-    } catch (err) {
-      throw new Error('Failed to load file content');
-    }
-  };
+      setSelectedFile(filePath);
+      setError(null);
+      
+      // If content is already loaded, don't fetch again
+      if (fileContent[filePath]) return;
 
-  const handleFileSelect = async (file) => {
-    setSelectedFile(file);
-    
-    if (!fileContent[file]) {
-      try {
-        const content = await fetchFileContent(file);
-        setFileContent(prevContent => ({ ...prevContent, [file]: content }));
-        
-        // Set chat context when file is selected
-        setChatContext({
-          owner,
-          repo,
-          selectedFile: file,
-          fileContent: content
-        });
-      } catch (err) {
-        setError('Failed to load file content');
-      }
+      const response = await fetch(
+        `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${filePath}`
+      );
+      
+      if (!response.ok) throw new Error(`Failed to fetch file content: ${response.status}`);
+      
+      const content = await response.text();
+      setFileContent(prev => ({ ...prev, [filePath]: content }));
+      
+      setChatContext({
+        owner,
+        repo,
+        selectedFile: filePath,
+        fileContent: content
+      });
+    } catch (err) {
+      setError(err.message);
+      console.error('Error loading file:', err);
     }
   };
 
   const handleCloseChat = () => {
     setChatContext(null);
-  };
-
-  const getFileIcon = (filename) => {
-    const ext = filename.split('.').pop().toLowerCase();
-    switch (ext) {
-      case 'js':
-      case 'jsx': return '📄 JavaScript';
-      case 'css': return '🎨 CSS';
-      case 'html': return '🌐 HTML';
-      case 'md': return '📝 Markdown';
-      case 'json': return '⚙️ JSON';
-      default: return '📄 File';
-    }
   };
 
   return (
@@ -150,30 +218,23 @@ const GithubPage = () => {
       )}
 
       <div className="grid grid-cols-12 gap-6">
-        {/* Files List */}
         <motion.div 
           layout
           className="col-span-3 bg-gray-800/50 rounded-xl border border-gray-700 p-4"
         >
           <h2 className="text-xl font-semibold mb-4 text-white">Repository Files</h2>
           <div className="space-y-2">
-            {files.map((file) => (
-              <div
-                key={file}
-                onClick={() => handleFileSelect(file)}
-                className={`p-3 rounded-lg cursor-pointer transition-colors 
-                  ${selectedFile === file 
-                    ? 'bg-green-500/20 border border-green-500/50 text-green-300' 
-                    : 'bg-gray-700/30 hover:bg-gray-700/50 text-white/70'}`}
-              >
-                <span className="mr-2">{getFileIcon(file)}</span>
-                {file}
-              </div>
+            {Object.entries(fileTree).map(([rootName, rootNode]) => (
+              <TreeNode 
+                key={rootName}
+                name={rootName} 
+                node={rootNode} 
+                onFileSelect={handleFileSelect}
+              />
             ))}
           </div>
         </motion.div>
 
-        {/* File Contents */}
         <motion.div 
           layout
           className="col-span-9 bg-gray-800/50 rounded-xl border border-gray-700 p-4"
@@ -192,14 +253,13 @@ const GithubPage = () => {
               </SyntaxHighlighter>
             ) : (
               <p className="text-gray-500 text-center">
-                Loading README or select a file to view its contents
+                Select a file to view its contents
               </p>
             )}
           </div>
         </motion.div>
       </div>
 
-      {/* Chat Interface */}
       {chatContext && (
         <EnhancedSingleFileChatInterface
           owner={chatContext.owner}
