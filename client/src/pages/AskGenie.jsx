@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Bot, User, Loader2 } from 'lucide-react';
+import { Send, Bot, User, Loader2, Book, Github, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
@@ -16,6 +16,18 @@ const simulatedResponses = [
   "That's an interesting question! Here's my take..."
 ];
 
+const ChatOption = ({ icon: Icon, title, active, onClick }) => (
+  <Card
+    onClick={onClick}
+    className={`p-4 flex flex-col items-center gap-2 cursor-pointer transition-all
+                hover:border-purple-500 hover:bg-purple-900/20
+                ${active ? 'border-purple-500 bg-purple-900/30' : 'border-purple-500/20 bg-gray-800/50'}`}
+  >
+    <Icon className={`h-8 w-8 ${active ? 'text-purple-400' : 'text-purple-500/70'}`} />
+    <span className="text-sm font-medium text-gray-200">{title}</span>
+  </Card>
+);
+
 const Message = ({ message, isBot, user }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
@@ -24,12 +36,14 @@ const Message = ({ message, isBot, user }) => (
   >
     {isBot && (
       <Avatar className="h-10 w-10 border-2 border-purple-500/20">
-        <Bot className="h-6 w-6 text-purple-500" />
-        <AvatarFallback className="bg-purple-500/10">G</AvatarFallback>
+        <AvatarImage src="/android-chrome-512x512.png" alt="AI Genie" />
+        <AvatarFallback className="bg-purple-500/10">
+          <Bot className="h-6 w-6 text-purple-500" />
+        </AvatarFallback>
       </Avatar>
     )}
 
-    <div className={`flex flex-col gap-2 ${isBot ? 'items-start' : 'items-end'} max-w-[80%]`}>
+    <div className={`flex flex-col gap-2 ${isBot ? 'items-start' : 'items-end'} max-w-[80%`}>
       <Card
         className={`shadow-lg ${
           isBot ? 'bg-gray-900 border-purple-500/20' : 'bg-purple-700 border-none'
@@ -66,6 +80,7 @@ const AskGenie = () => {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [chatMode, setChatMode] = useState('general'); // ['general', 'wiki', 'github', 'pdf']
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -81,13 +96,13 @@ const AskGenie = () => {
     const trimmedInput = input.trim();
     if (!trimmedInput || isLoading) return;
 
-    addMessage(trimmedInput);
+    addMessage(`[${chatMode.toUpperCase()}] ${trimmedInput}`);
     setInput('');
 
     setIsLoading(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      const response = simulatedResponses[Math.floor(Math.random() * simulatedResponses.length)];
+      const response = `${chatMode.toUpperCase()}: ${simulatedResponses[Math.floor(Math.random() * simulatedResponses.length)]}`;
       addMessage(response, true);
     } finally {
       setIsLoading(false);
@@ -96,10 +111,38 @@ const AskGenie = () => {
 
   return (
     <div className="flex flex-col flex-1 ml-[330px]">
-      <div className="h-full flex flex-col max-w-4xl mx-auto w-full p-4">
+      <div className="h-full flex flex-col max-w-4xl mx-auto w-full p-4 gap-6">
+        {/* Chat Options */}
+        <div className="grid grid-cols-4 gap-4">
+          <ChatOption 
+            icon={Bot} 
+            title="General Chat" 
+            active={chatMode === 'general'}
+            onClick={() => setChatMode('general')}
+          />
+          <ChatOption 
+            icon={Book} 
+            title="Chat with Wiki" 
+            active={chatMode === 'wiki'}
+            onClick={() => setChatMode('wiki')}
+          />
+          <ChatOption 
+            icon={Github} 
+            title="Chat with GitHub" 
+            active={chatMode === 'github'}
+            onClick={() => setChatMode('github')}
+          />
+          <ChatOption 
+            icon={FileText} 
+            title="Chat with PDF" 
+            active={chatMode === 'pdf'}
+            onClick={() => setChatMode('pdf')}
+          />
+        </div>
+
         {/* Messages Container */}
-        <div className="flex-1 overflow-hidden">
-          <div className="h-full overflow-y-auto space-y-4 px-2">
+        <div className="flex-1 overflow-hidden bg-gray-900/30 rounded-lg border border-purple-500/20">
+          <div className="h-full overflow-y-auto space-y-4 p-4">
             <AnimatePresence mode="popLayout">
               {messages.map((message, index) => (
                 <Message key={index} {...message} user={user} />
@@ -111,8 +154,10 @@ const AskGenie = () => {
                   className="flex gap-4"
                 >
                   <Avatar className="h-10 w-10 border-2 border-purple-500/20">
-                    <Bot className="h-6 w-6 text-purple-500" />
-                    <AvatarFallback className="bg-purple-500/10">G</AvatarFallback>
+                    <AvatarImage src="/android-chrome-512x512.png" alt="AI Genie" />
+                    <AvatarFallback className="bg-purple-500/10">
+                      <Bot className="h-6 w-6 text-purple-500" />
+                    </AvatarFallback>
                   </Avatar>
                   <Card className="p-3 w-fit bg-gray-800 border-purple-500/20">
                     <Loader2 className="h-5 w-5 animate-spin text-purple-500" />
@@ -125,12 +170,12 @@ const AskGenie = () => {
         </div>
 
         {/* Input Form */}
-        <Card className="bg-gray-800/50 border-purple-500/20 p-4 mt-4">
+        <Card className="bg-gray-800/50 border-purple-500/20 p-4">
           <form onSubmit={handleSubmit} className="flex gap-3">
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask me anything..."
+              placeholder={`Ask anything about ${chatMode}...`}
               className="min-h-[50px] max-h-[150px] resize-none bg-gray-900/50 
                          border-purple-500/20 text-gray-200 text-sm
                          placeholder:text-gray-500 focus:border-purple-500 
