@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
-import { Trash2, Bookmark, BookmarkCheck, ThumbsUp, MessageCircle, Flag, BadgeCheck } from "lucide-react"
+import { Trash2, Bookmark, BookmarkCheck, ThumbsUp, MessageCircle, Flag, BadgeCheck, ArrowBigDown, ArrowBigUp } from "lucide-react"
 import { useUser } from "@/providers/UserProvider"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardHeader } from "@/components/ui/card"
@@ -182,9 +182,11 @@ const Post = ({ post, setPosts, handleAddComment, commentRedirect = true }) => {
                         className={`transition-all hover:bg-white/10 text-white`}
                         onClick={handleLike}
                       >
-                        <ThumbsUp
-                          className={`h-5 w-5 mr-1 ${isLiked ? 'fill-white' : ''}`}
-                        />
+                        {isLiked ? (
+                          <ArrowBigDown className="h-5 w-5 mr-1 fill-current" />
+                        ) : (
+                          <ArrowBigUp className="h-5 w-5  mr-1 fill-current" />
+                        )}
                         <span>{likeCount}</span>
                       </Button>
 

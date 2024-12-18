@@ -84,7 +84,6 @@ const getUserProfile = async (req, res) => {
     const userProfile = {
       ...user.toObject(),
       badges: defaultBadgesData,
-      notifications: defaultNotifications,
     };
 
     res.json(userProfile);

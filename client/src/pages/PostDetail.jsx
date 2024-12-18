@@ -201,18 +201,18 @@ const PostDetail = () => {
     try {
       const response = await axios.post(
         `${SERVER_URL}/post/comment/${commentId}/reply`,
-        { content },
+        { content, postId: post._id },
         {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
         }
       );
-      
+
       // Update the temporary reply with the real one
       setComments(prev => updateCommentReplies(
-        prev, 
-        commentId, 
+        prev,
+        commentId,
         response.data.data
       ));
     } catch (err) {
@@ -230,76 +230,76 @@ const PostDetail = () => {
     }
   };
 
-const updateReplyVotes = (comments, commentId, replyId, value) => {
-  return comments.map(comment => {
-    if (comment._id === commentId) {
-      return {
-        ...comment,
-        replies: comment.replies.map(reply =>
-          reply._id === replyId
-            ? { ...reply, upvotes: [...reply.upvotes, value] }
-            : reply
-        )
-      };
-    }
-    return comment;
-  });
-};
-
-const removeReply = (comments, commentId, replyId) => {
-  return comments.map(comment => {
-    if (comment._id === commentId) {
-      return {
-        ...comment,
-        replies: comment.replies.filter(reply => reply._id !== replyId)
-      };
-    }
-    return comment;
-  });
-};
-
-const handleVoteReply = async (commentId, replyId, value) => {
-  setComments(prev => updateReplyVotes(prev, commentId, replyId, value));
-
-  try {
-    await axios.post(
-      `${SERVER_URL}/post/comment/${replyId}/upvote`,
-      {},
-      {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+  const updateReplyVotes = (comments, commentId, replyId, value) => {
+    return comments.map(comment => {
+      if (comment._id === commentId) {
+        return {
+          ...comment,
+          replies: comment.replies.map(reply =>
+            reply._id === replyId
+              ? { ...reply, upvotes: [...reply.upvotes, value] }
+              : reply
+          )
+        };
       }
-    );
-  } catch (err) {
-    // Revert the optimistic update
-    setComments(prev => updateReplyVotes(prev, commentId, replyId, -value));
-    console.error('Error voting reply:', err.response?.data?.message);
-  }
-};
+      return comment;
+    });
+  };
 
-const handleDeleteReply = async (commentId, replyId) => {
-  // Store the current state for potential rollback
-  const previousComments = comments;
-  
-  // Optimistic update - remove the reply
-  setComments(prev => removeReply(prev, commentId, replyId));
-
-  try {
-    await axios.delete(
-      `${SERVER_URL}/post/comment/${commentId}/reply/${replyId}`,
-      {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+  const removeReply = (comments, commentId, replyId) => {
+    return comments.map(comment => {
+      if (comment._id === commentId) {
+        return {
+          ...comment,
+          replies: comment.replies.filter(reply => reply._id !== replyId)
+        };
       }
-    );
-  } catch (err) {
-    // Restore the previous state if deletion fails
-    setComments(previousComments);
-    console.error('Error deleting reply:', err.response?.data?.message);
-  }
-};
+      return comment;
+    });
+  };
+
+  const handleVoteReply = async (commentId, replyId, value) => {
+    setComments(prev => updateReplyVotes(prev, commentId, replyId, value));
+
+    try {
+      await axios.post(
+        `${SERVER_URL}/post/comment/${replyId}/upvote`,
+        { postId: post._id },
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+    } catch (err) {
+      // Revert the optimistic update
+      setComments(prev => updateReplyVotes(prev, commentId, replyId, -value));
+      console.error('Error voting reply:', err.response?.data?.message);
+    }
+  };
+
+  const handleDeleteReply = async (commentId, replyId) => {
+    // Store the current state for potential rollback
+    const previousComments = comments;
+
+    // Optimistic update - remove the reply
+    setComments(prev => removeReply(prev, commentId, replyId));
+
+    try {
+      await axios.delete(
+        `${SERVER_URL}/post/comment/${commentId}/reply/${replyId}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+    } catch (err) {
+      // Restore the previous state if deletion fails
+      setComments(previousComments);
+      console.error('Error deleting reply:', err.response?.data?.message);
+    }
+  };
 
   const handleVoteComment = async (commentId, value) => {
     setComments(prev => prev.map(comment =>
@@ -366,6 +366,39 @@ const handleDeleteReply = async (commentId, replyId) => {
     }
   }
 
+  const handleMarkComment = async (commentId) => {
+    // Find the comment to be updated
+    const commentToUpdate = comments.find(c => c._id === commentId);
+    const newType = commentToUpdate.type === 'correct' ? 'user' : 'correct';
+
+    // Optimistic update
+    setComments(prev => prev.map(comment =>
+      comment._id === commentId
+        ? { ...comment, type: newType }
+        : comment
+    ));
+
+    try {
+      await axios.post(
+        `${SERVER_URL}/post/comment/${commentId}/correct`,
+        { postId: post._id },
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+    } catch (err) {
+      // Revert changes if request fails
+      setComments(prev => prev.map(comment =>
+        comment._id === commentId
+          ? { ...comment, type: commentToUpdate.type }
+          : comment
+      ));
+      console.error('Error marking comment as correct:', err.response?.data?.message);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="text-center py-8">
@@ -390,7 +423,7 @@ const handleDeleteReply = async (commentId, replyId) => {
   }
 
   const sortedComments = comments.sort((a, b) => {
-  // const sortedComments = replies.sort((a, b) => {
+    // const sortedComments = replies.sort((a, b) => {
     // Correct answers have highest priority
     if (a.type === 'correct' && b.type !== 'correct') return -1;
     if (a.type !== 'correct' && b.type === 'correct') return 1;
@@ -436,6 +469,7 @@ const handleDeleteReply = async (commentId, replyId) => {
                 onVote={handleVoteComment}
                 onFlag={handleFlagComment}
                 onDelete={handleDeleteComment}
+                onMarkCorrect={handleMarkComment}
                 onReplyAdd={handleAddReply}
                 onReplyVote={handleVoteReply}
                 onReplyDelete={handleDeleteReply}
