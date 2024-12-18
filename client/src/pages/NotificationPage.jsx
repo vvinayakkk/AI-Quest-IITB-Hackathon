@@ -23,6 +23,13 @@ const getUnreadCount = (notifications) => notifications.filter(n => !n.read).len
 const NotificationsPage = () => {
   const { notifications, setNotifications } = useUser();
 
+  const sortedNotifications = [...notifications].sort((a, b) => {
+    if (!a.read && b.read) return -1;
+    if (a.read && !b.read) return 1;
+
+    return new Date(b.createdAt) - new Date(a.createdAt);
+  });
+
   return (
     <Card className="w-full max-w-3xl my-6 mx-auto bg-background/80 border-purple-500/20 text-text">
       <CardHeader className="border-b border-border">
@@ -51,7 +58,7 @@ const NotificationsPage = () => {
       </CardHeader>
       <ScrollArea className="h-[60vh]">
         <CardContent className="p-4">
-          {notifications.map(notification => (
+          {sortedNotifications.map(notification => (
             <NotificationItem
               key={notification._id}
               notification={notification}

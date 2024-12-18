@@ -1,19 +1,24 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Flag, BadgeCheck, Star, Trash2, ThumbsUp, MessageCircle } from 'lucide-react'
+import { Flag, BadgeCheck, Star, Trash2, MessageCircle, Check, ArrowBigUp, ArrowBigDown } from 'lucide-react'
 import { formatTimeAgo, formatUTCTimestamp } from "@/utils/dateUtils"
 import { useUser } from "@/providers/UserProvider"
 import { parseHashtags } from "@/utils/hashtagUtils"
 import { CommentDialog } from "./CommentDialog"
 
-const CommentCard = ({ comment, postId, onVote, onFlag, onDelete, isReply = false, parentCommentId = null, onReplyAdd, onReplyVote, onReplyDelete }) => {
+const CommentCard = ({ comment, postId, onVote, onFlag, onDelete, onMarkCorrect, isReply = false, parentCommentId = null, onReplyAdd, onReplyVote, onReplyDelete }) => {
   const { user } = useUser()
   const [flagged] = useState(comment.flagged?.status)
   const [upvotes, setUpvotes] = useState(comment.upvotes?.length || 0)
   const [liked, setLiked] = useState(comment.upvotes?.includes(user._id))
+  const [isCorrect, setIsCorrect] = useState(comment.type === 'correct')
   const [showCommentDialog, setShowCommentDialog] = useState(false)
+
+  useEffect(() => {
+    setIsCorrect(comment.type === 'correct')
+  }, [comment.type])
 
   const getBadgeColor = () => {
     switch (comment.type) {
@@ -51,6 +56,15 @@ const CommentCard = ({ comment, postId, onVote, onFlag, onDelete, isReply = fals
     else onReplyVote(parentCommentId, commentId, voteValue)
   }
 
+  const handleMarkCorrect = async () => {
+    try {
+      await onMarkCorrect(comment._id)
+      setIsCorrect(!isCorrect)
+    } catch (error) {
+      console.error('Error marking comment as correct:', error)
+    }
+  }
+
   return (
     <>
       <div className={`${isReply ? 'ml-6' : ''} relative`}>
@@ -68,30 +82,47 @@ const CommentCard = ({ comment, postId, onVote, onFlag, onDelete, isReply = fals
           } backdrop-blur relative hover:shadow-lg transition-all duration-300`}>
           <div className="p-3">
             <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <Avatar className={`h-9 w-9 rounded-full ${getBadgeColor()}`}>
-                  <AvatarImage src={comment.author.avatar} />
-                  <AvatarFallback>{`${comment.author.firstName[0]}${comment.author.lastName[0]}`}</AvatarFallback>
-                </Avatar>
+              <div className="flex justify-between gap-2 mb-2">
+                <div className="flex items-center gap-2">
+                  <Avatar className={`h-9 w-9 rounded-full ${getBadgeColor()}`}>
+                    <AvatarImage src={comment.author.avatar} />
+                    <AvatarFallback>{`${comment.author.firstName[0]}${comment.author.lastName[0]}`}</AvatarFallback>
+                  </Avatar>
 
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center">
-                      <span className="text-text font-semibold">{comment.author.fullName}</span>
-                      {comment.author.verified && (
-                        <BadgeCheck className="w-4 h-4 text-purple-500 ml-1" />
-                      )}
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center">
+                        <span className="text-text font-semibold">{comment.author.fullName}</span>
+                        {comment.author.verified && (
+                          <BadgeCheck className="w-4 h-4 text-purple-500 ml-1" />
+                        )}
+                      </div>
+                      {getReplyLabel()}
                     </div>
-                    {getReplyLabel()}
+                    {comment.author?.department && <span className="text-[11px] text-gray-400">{comment.author?.department}</span>}
+                    <span
+                      className="text-[11px] text-gray-400"
+                      title={formatUTCTimestamp(comment.createdAt)}
+                    >
+                      {formatTimeAgo(comment.createdAt)}
+                    </span>
                   </div>
-                  {comment.author?.department && <span className="text-[11px] text-gray-400">{comment.author?.department}</span>}
-                  <span
-                    className="text-[11px] text-gray-400"
-                    title={formatUTCTimestamp(comment.createdAt)}
-                  >
-                    {formatTimeAgo(comment.createdAt)}
-                  </span>
                 </div>
+
+                {(!isReply && ["Admin", "Moderator"].includes(user.role)) && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={`flex items-center gap-2 ${isCorrect
+                      ? "text-green-400 hover:text-red-400 hover:bg-red-500/10"
+                      : "text-gray-400 hover:text-green-400 hover:bg-green-500/10"
+                      } transition-all duration-200`}
+                    onClick={handleMarkCorrect}
+                  >
+                    {isCorrect ? 'Mark as not Correct' : 'Mark as Correct'}
+                    <Check className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
 
               <div className="mb-2 pl-10">
@@ -106,7 +137,11 @@ const CommentCard = ({ comment, postId, onVote, onFlag, onDelete, isReply = fals
                     className={`transition-all hover:bg-white/10 text-white'}`}
                     onClick={() => handleVote(comment._id)}
                   >
-                    <ThumbsUp className={`h-4 w-4 ${liked ? 'fill-current' : ''}`} />
+                    {liked ? (
+                      <ArrowBigDown className="h-5 w-5 fill-current" />
+                    ) : (
+                      <ArrowBigUp className="h-5 w-5 fill-current" />
+                    )}
                     <span className="ml-1 text-sm">{upvotes}</span>
                   </Button>
 
@@ -154,6 +189,7 @@ const CommentCard = ({ comment, postId, onVote, onFlag, onDelete, isReply = fals
                     onVote={onVote}
                     onFlag={onFlag}
                     onDelete={onDelete}
+                    onMarkCorrect={onMarkCorrect}
                     isReply={true}
                     parentCommentId={comment._id}
                     onReplyAdd={onReplyAdd}

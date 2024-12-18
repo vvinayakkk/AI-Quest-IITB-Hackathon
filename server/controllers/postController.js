@@ -9,23 +9,23 @@ import Users from "../models/users.js";
  */
 const createPopulateObject = (maxDepth = 10) => {
   const authorSelect = "firstName lastName fullName avatar email verified department";
-  
+
   const populateReplies = (depth = 0) => {
     if (depth >= maxDepth) return null;
-    
+
     return {
       path: "replies",
       options: { sort: { createdAt: -1 } },
       populate: [
         {
           path: "author",
-          select: authorSelect
+          select: authorSelect,
         },
-        populateReplies(depth + 1)
-      ].filter(Boolean)
+        populateReplies(depth + 1),
+      ].filter(Boolean),
     };
   };
-  
+
   return populateReplies();
 };
 
@@ -38,10 +38,10 @@ const findPostById = async (id) => {
       populate: [
         {
           path: "author",
-          select: "firstName lastName fullName avatar email verified department"
+          select: "firstName lastName fullName avatar email verified department",
         },
-        createPopulateObject()
-      ]
+        createPopulateObject(),
+      ],
     });
 
   if (!post) {
@@ -243,17 +243,17 @@ const addComment = async (req, res) => {
     // Add comment to post and user
     post.comments.push(comment._id);
     await post.save();
-    
+
     await Users.findByIdAndUpdate(userId, { $push: { comments: comment._id } });
-    
-        if (author._id.toString() !== userId) {
-          author.notifications.push({
-            type: "comment",
-            message: `${user.fullName} commented your post "${post.title}"`,
-            link: `/post/${post._id}`,
-          });
-          await author.save();
-        }
+
+    if (author._id.toString() !== userId) {
+      author.notifications.push({
+        type: "comment",
+        message: `${user.fullName} commented your post "${post.title}"`,
+        link: `/post/${post._id}`,
+      });
+      await author.save();
+    }
 
     // Populate the comment's author details
     await comment.populate({
