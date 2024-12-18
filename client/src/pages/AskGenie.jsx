@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useUser } from '@/providers/UserProvider';
+import ReactMarkdown from 'react-markdown';
 
 // Simulated bot responses
 const simulatedResponses = [
@@ -51,7 +52,18 @@ const Message = ({ message, isBot, user }) => (
             : 'bg-purple-600 text-white'
         }`}
       >
-        <p className="text-sm whitespace-pre-wrap">{message}</p>
+        {isBot ? (
+          <ReactMarkdown 
+            className="text-sm prose prose-invert prose-p:leading-normal prose-p:margin-0
+                       prose-headings:margin-top-2 prose-headings:margin-bottom-2
+                       prose-ul:margin-top-2 prose-ul:margin-bottom-2
+                       prose-li:margin-top-0 prose-li:margin-bottom-0"
+          >
+            {message}
+          </ReactMarkdown>
+        ) : (
+          <p className="text-sm whitespace-pre-wrap">{message}</p>
+        )}
       </div>
       <span className="text-xs text-gray-400 px-1">
         {new Date().toLocaleTimeString()}
@@ -177,6 +189,13 @@ const AskGenie = () => {
     }
   };
 
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e);
+    }
+  };
+
   return (
     <div className="flex flex-col flex-1 ml-[330px]">
       <div className="h-full flex flex-col max-w-4xl mx-auto w-full p-4 gap-6">
@@ -285,6 +304,7 @@ const AskGenie = () => {
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyPress}
               placeholder={
                 chatMode === 'pdf'
                   ? pdfFile
