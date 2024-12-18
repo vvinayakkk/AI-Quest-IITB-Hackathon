@@ -3,28 +3,45 @@ import Comment from "../models/comment.js";
 import Users from "../models/users.js";
 
 /**
- * Helper function to find and populate a post by ID
- * @param {string} id - Post ID
- * @returns {Promise<Post>} Populated post object
+ * Creates a recursive populate object with depth limit
+ * @param {number} maxDepth Maximum depth to populate
+ * @returns {Object} Mongoose populate configuration
  */
+const createPopulateObject = (maxDepth = 10) => {
+  const authorSelect = "firstName lastName fullName avatar email verified department";
+  
+  const populateReplies = (depth = 0) => {
+    if (depth >= maxDepth) return null;
+    
+    return {
+      path: "replies",
+      options: { sort: { createdAt: -1 } },
+      populate: [
+        {
+          path: "author",
+          select: authorSelect
+        },
+        populateReplies(depth + 1)
+      ].filter(Boolean)
+    };
+  };
+  
+  return populateReplies();
+};
+
 const findPostById = async (id) => {
   const post = await Post.findById(id)
     .populate("author", "firstName lastName fullName avatar email verified department")
     .populate({
       path: "comments",
+      options: { sort: { createdAt: -1 } },
       populate: [
         {
           path: "author",
-          select: "firstName lastName fullName avatar email verified department",
+          select: "firstName lastName fullName avatar email verified department"
         },
-        {
-          path: "replies",
-          populate: {
-            path: "author",
-            select: "firstName lastName fullName avatar email verified department",
-          },
-        },
-      ],
+        createPopulateObject()
+      ]
     });
 
   if (!post) {

@@ -242,7 +242,6 @@ const Post = ({ post, setPosts, handleAddComment, commentRedirect = true }) => {
       <CommentDialog
         open={showCommentDialog}
         onOpenChange={setShowCommentDialog}
-        postId={post._id}
         onAddComment={handleAddComment}
       />
     </>
