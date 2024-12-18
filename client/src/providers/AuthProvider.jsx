@@ -157,7 +157,8 @@ export function AuthProvider({ children }) {
     setBookmarks([]);
     setError(null);
     setIsLoggedIn(false);
-    localStorage.removeItem('token');
+    // localStorage.removeItem('token');
+    localStorage.clear();
     navigate('/login');
   };
 
