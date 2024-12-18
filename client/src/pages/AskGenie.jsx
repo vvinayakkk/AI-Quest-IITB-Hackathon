@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Bot, User, Loader2, Book, Github, FileText } from 'lucide-react';
+import { Send, Bot, User, Loader2, Book, Github, FileText, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
@@ -43,16 +43,16 @@ const Message = ({ message, isBot, user }) => (
       </Avatar>
     )}
 
-    <div className={`flex flex-col gap-2 ${isBot ? 'items-start' : 'items-end'} max-w-[80%`}>
-      <Card
-        className={`shadow-lg ${
-          isBot ? 'bg-gray-900 border-purple-500/20' : 'bg-purple-700 border-none'
+    <div className={`flex flex-col gap-2 ${isBot ? 'items-start' : 'items-end'} max-w-[80%]`}>
+      <div
+        className={`px-4 py-2 rounded-lg shadow-md ${
+          isBot 
+            ? 'bg-gray-800 text-white border border-purple-500/20' 
+            : 'bg-purple-600 text-white'
         }`}
       >
-        <div className="px-4 py-3">
-          <p className={`text-sm font-medium ${isBot ? 'text-gray-100' : 'text-white'}`}>{message}</p>
-        </div>
-      </Card>
+        <p className="text-sm whitespace-pre-wrap">{message}</p>
+      </div>
       <span className="text-xs text-gray-400 px-1">
         {new Date().toLocaleTimeString()}
       </span>
@@ -81,7 +81,11 @@ const AskGenie = () => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [chatMode, setChatMode] = useState('general'); // ['general', 'wiki', 'github', 'pdf']
+  const [pdfFile, setPdfFile] = useState(null);
+  const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [documentId, setDocumentId] = useState(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -91,19 +95,83 @@ const AskGenie = () => {
     setMessages((prev) => [...prev, { text, isBot }]);
   };
 
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (file && file.type === 'application/pdf') {
+      setUploadLoading(true);
+      const formData = new FormData();
+      formData.append('document', file);
+
+      try {
+        const response = await fetch('http://127.0.0.1:8000/api/upload-document/', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error('Upload failed');
+        }
+
+        const data = await response.json();
+        setDocumentId(data.document_id);
+        setPdfFile(file);
+        addMessage(`Successfully uploaded PDF: ${file.name}`, true);
+        addMessage("You can now ask questions about the PDF content!", true);
+      } catch (error) {
+        addMessage("Failed to upload PDF. Please try again.", true);
+        console.error('Upload error:', error);
+      } finally {
+        setUploadLoading(false);
+      }
+    } else {
+      addMessage("Please upload a valid PDF file.", true);
+    }
+  };
+
+  const handleModeChange = (mode) => {
+    setChatMode(mode);
+    if (mode === 'pdf' && !pdfFile) {
+      addMessage("Please upload a PDF file to begin.", true);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const trimmedInput = input.trim();
     if (!trimmedInput || isLoading) return;
 
-    addMessage(`[${chatMode.toUpperCase()}] ${trimmedInput}`);
+    addMessage(trimmedInput);
     setInput('');
-
     setIsLoading(true);
+
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      const response = `${chatMode.toUpperCase()}: ${simulatedResponses[Math.floor(Math.random() * simulatedResponses.length)]}`;
-      addMessage(response, true);
+      if (chatMode === 'pdf' && documentId) {
+        const response = await fetch('http://localhost:8000/api/document/query/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            document_id: documentId,
+            question: trimmedInput,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Query failed');
+        }
+
+        const data = await response.json();
+        addMessage(data.answer, true);
+      } else {
+        // Existing simulation for other chat modes
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const response = simulatedResponses[Math.floor(Math.random() * simulatedResponses.length)];
+        addMessage(response, true);
+      }
+    } catch (error) {
+      addMessage("Sorry, I couldn't process your question. Please try again.", true);
+      console.error('Query error:', error);
     } finally {
       setIsLoading(false);
     }
@@ -136,16 +204,58 @@ const AskGenie = () => {
             icon={FileText} 
             title="Chat with PDF" 
             active={chatMode === 'pdf'}
-            onClick={() => setChatMode('pdf')}
+            onClick={() => handleModeChange('pdf')}
           />
         </div>
 
+        {/* PDF Upload Button */}
+        {chatMode === 'pdf' && !pdfFile && (
+          <Card className="p-4 flex flex-col items-center gap-4 border-dashed border-2 border-purple-500/40 bg-transparent">
+            <input
+              type="file"
+              accept=".pdf"
+              onChange={handleFileUpload}
+              ref={fileInputRef}
+              className="hidden"
+              disabled={uploadLoading}
+            />
+            <Button
+              onClick={() => fileInputRef.current?.click()}
+              className="bg-purple-600 hover:bg-purple-700"
+              disabled={uploadLoading}
+            >
+              {uploadLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Upload PDF
+                </>
+              )}
+            </Button>
+            <p className="text-sm text-gray-400">
+              {uploadLoading 
+                ? "Processing your PDF..." 
+                : "Upload a PDF file to start the conversation"}
+            </p>
+          </Card>
+        )}
+
         {/* Messages Container */}
-        <div className="flex-1 overflow-hidden bg-gray-900/30 rounded-lg border border-purple-500/20">
+        <div className={`flex-1 overflow-hidden bg-gray-900/30 rounded-lg border border-purple-500/20 
+                        ${chatMode === 'pdf' && !pdfFile ? 'opacity-50' : ''}`}>
           <div className="h-full overflow-y-auto space-y-4 p-4">
             <AnimatePresence mode="popLayout">
-              {messages.map((message, index) => (
-                <Message key={index} {...message} user={user} />
+              {messages.map((msg, index) => (
+                <Message 
+                  key={index} 
+                  message={msg.text}
+                  isBot={msg.isBot} 
+                  user={user} 
+                />
               ))}
               {isLoading && (
                 <motion.div
@@ -175,7 +285,14 @@ const AskGenie = () => {
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={`Ask anything about ${chatMode}...`}
+              placeholder={
+                chatMode === 'pdf'
+                  ? pdfFile
+                    ? 'Ask a question about the uploaded PDF...'
+                    : 'Please upload a PDF first...'
+                  : `Ask anything about ${chatMode}...`
+              }
+              disabled={chatMode === 'pdf' && !pdfFile}
               className="min-h-[50px] max-h-[150px] resize-none bg-gray-900/50 
                          border-purple-500/20 text-gray-200 text-sm
                          placeholder:text-gray-500 focus:border-purple-500 
@@ -183,7 +300,7 @@ const AskGenie = () => {
             />
             <Button
               type="submit"
-              disabled={!input.trim() || isLoading}
+              disabled={!input.trim() || isLoading || (chatMode === 'pdf' && !pdfFile)}
               className="bg-purple-600 hover:bg-purple-700 text-white px-4
                            shadow-md hover:shadow-lg transition-all"
             >
