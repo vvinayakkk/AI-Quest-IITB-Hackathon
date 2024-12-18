@@ -123,6 +123,7 @@ const deleteReply = async (req, res) => {
   try {
     const { commentId, replyId } = req.params;
     const userId = req.user.id;
+    const user = await Users.findById(userId);
 
     const parentComment = await Comment.findById(commentId);
     if (!parentComment) {
@@ -140,8 +141,10 @@ const deleteReply = async (req, res) => {
       });
     }
 
+    const canDelete = reply.author._id.toString() === userId || (user && ["Admin", "Moderator"].includes(user.role));
+
     // Check if user is authorized to delete the reply
-    if (reply.author.toString() !== userId) {
+    if (!canDelete) {
       return res.status(403).json({
         success: false,
         message: "Not authorized to delete this reply",

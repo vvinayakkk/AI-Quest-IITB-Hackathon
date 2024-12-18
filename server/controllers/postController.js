@@ -1,6 +1,9 @@
 import Post from "../models/post.js";
 import Comment from "../models/comment.js";
 import Users from "../models/users.js";
+import EmailService from '../services/mailService.js';
+
+
 
 /**
  * Creates a recursive populate object with depth limit
@@ -190,7 +193,7 @@ const toggleLike = async (req, res) => {
         author.notifications.push({
           type: "upvote",
           message: `${user.fullName} liked your post "${post.title}"`,
-          link: `/post/${post._id}`,
+          link: `http://localhost:5173/post/${post._id}`,
         });
         await author.save();
       }
@@ -198,6 +201,15 @@ const toggleLike = async (req, res) => {
     }
 
     await post.save();
+
+    await EmailService.sendNotificationEmail({
+      to: author.email,
+      userName: author.fullName,
+      notificationType: "upvote",
+      message: `${user.fullName} liked your post "${post.title}"`,
+      link: `http://localhost:5173/post/${post._id}`,
+      logoPath: '../../client/public/logo.png' // Path to your logo
+    });
 
     res.json({
       success: true,
@@ -259,6 +271,15 @@ const addComment = async (req, res) => {
     await comment.populate({
       path: "author",
       select: "firstName lastName fullName avatar email verified department",
+    });
+
+    await EmailService.sendNotificationEmail({
+      to: author.email,
+      userName: author.fullName,
+      notificationType: "comment",
+      message: `${user.fullName} liked your post "${post.title}"`,
+      link: `http://localhost:5173/post/${post._id}`,
+      logoPath: '../../client/public/logo.png' // Path to your logo
     });
 
     res.status(201).json({
