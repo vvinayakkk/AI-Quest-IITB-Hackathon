@@ -194,6 +194,45 @@ const getBookmarks = async (req, res) => {
   }
 };
 
+const readNotification = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const notifId = req.params.id;
+
+    const user = await Users.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    // Find the notification and update its read status
+    const notification = user.notifications.find(n => n._id.toString() === notifId);
+    if (!notification) {
+      return res.status(404).json({
+        success: false,
+        message: "Notification not found"
+      });
+    }
+
+    notification.read = true;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Notification marked as read",
+      data: user.notifications
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error updating notification",
+      error: error.message
+    });
+  }
+};
+
 const getAllUsers = async (req, res) => {
   try {
     const users = await Users.find().select("-password").sort({ createdAt: -1 });
@@ -209,5 +248,6 @@ export {
   getUserPosts, 
   bookmarkPost, 
   getBookmarks, 
+  readNotification,
   getAllUsers, 
 };

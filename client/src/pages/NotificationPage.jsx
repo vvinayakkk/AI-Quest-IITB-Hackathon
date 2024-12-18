@@ -6,16 +6,60 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { NotificationItem } from "@/components/NotificationItem"
 import { toast } from "sonner"
 import { useUser } from "@/providers/UserProvider"
+import axios from "axios"
 
-const markAllAsRead = (setNotifications) => {
-  setNotifications(prev => prev.map(n => ({ ...n, read: true })))
-  toast.success("All notifications marked as read")
+const SERVER_URL = import.meta.env.VITE_SERVER_URL
+
+const markAllAsRead = async (notifications, setNotifications) => {
+  try {
+    // Optimistically update UI
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+
+    // Process all unread notifications
+    const unreadNotifications = notifications.filter(n => !n.read);
+    await Promise.all(
+      unreadNotifications.map(notification =>
+        markAsRead(notification._id, setNotifications)
+      )
+    );
+
+    toast.success("All notifications marked as read");
+  } catch (error) {
+    // Revert changes on error
+    setNotifications(prev => notifications);
+    toast.error("Failed to mark all notifications as read");
+  }
 }
 
-const markAsRead = (_id, setNotifications) => {
-  setNotifications(prev => prev.map(n =>
-    n._id === _id ? { ...n, read: true } : n
-  ))
+const markAsRead = async (_id, setNotifications) => {
+  try {
+    // Optimistically update UI
+    setNotifications(prev => prev.map(n =>
+      n._id === _id ? { ...n, read: true } : n
+    ));
+
+    const response = await axios.patch(
+      `${SERVER_URL}/user/notification/${_id}/read`,
+      {},
+      {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      }
+    );
+
+    if (!response.data.success) {
+      // Revert changes if request failed
+      setNotifications(prev => prev.map(n =>
+        n._id === _id ? { ...n, read: false } : n
+      ));
+    }
+  } catch (error) {
+    // Revert changes and show error
+    setNotifications(prev => prev.map(n =>
+      n._id === _id ? { ...n, read: false } : n
+    ));
+  }
 }
 
 const getUnreadCount = (notifications) => notifications.filter(n => !n.read).length
@@ -48,7 +92,7 @@ const NotificationsPage = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => markAllAsRead(setNotifications)}
+            onClick={() => markAllAsRead(notifications, setNotifications)}
             className="text-accent hover:text-white/80"
           >
             <Check className="h-4 w-4 mr-2" />
