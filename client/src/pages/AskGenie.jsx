@@ -146,7 +146,7 @@ const AskGenie = () => {
 
     try {
       if (chatMode === 'pdf' && documentId) {
-        const response = await fetch('http://localhost:8000/api/document/query/', {
+        const response = await fetch('http://localhost:8000/api/query-document/', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

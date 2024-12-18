@@ -15,7 +15,7 @@ import docx
 class DocumentAnalysisView:
     def __init__(self):
         # MongoDB Connection
-        self.mongo_uri = os.getenv('MONGO_URI', 'mongodb+srv://Hackathon:lksFV2nrUudC4Ukl@cluster0.o9n03.mongodb.net/AI-Quest?retryWrites=true&w=majority&appName=Cluster0')
+        self.mongo_uri = os.getenv('MONGO_URI', 'mongodb+srv://Hackathon:oHq6C9fQOwsLEHon@cluster0.o9n03.mongodb.net/AI-Quest?retryWrites=true&w=majority&appName=Cluster0')
         self.client = pymongo.MongoClient(self.mongo_uri)
         self.db = self.client['AI-Quest']
         self.documents_collection = self.db['documents']
