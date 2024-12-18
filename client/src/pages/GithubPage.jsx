@@ -261,7 +261,7 @@ const GithubPage = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-6 text-gray-200">
+    <div className="max-w-6xl ml-auto mr-8 py-4 sm:py-8 px-3 sm:px-4 text-gray-200">
       <div className="flex items-center gap-4 mb-8">
         <form onSubmit={fetchRepoData} className="flex-1 flex gap-4">
           <Input
