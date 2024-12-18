@@ -1,9 +1,8 @@
 import Post from "../models/post.js";
 import Comment from "../models/comment.js";
 import Users from "../models/users.js";
-import EmailService from '../services/mailService.js';
-
-
+import EmailService from "../services/mailService.js";
+import axios from "axios";
 
 /**
  * Creates a recursive populate object with depth limit
@@ -91,15 +90,44 @@ const createPost = async (req, res) => {
 
     await Users.findByIdAndUpdate(userId, { $push: { posts: post._id } }, { new: true });
 
-    // Populate author details
-    await post.populate({
-      path: "author",
-      select: "firstName lastName fullName avatar email verified department",
+    const response = await axios.post("http://127.0.0.1:8000/api/gemini-answer/", {
+      heading: title,
+      postContent: content,
     });
+
+    const comment = await Comment.create({
+      author: "6762992a111a1def3c125264",
+      content: response.data.answer,
+      type: "ai"
+    });
+
+    // Add comment to post and user
+    post.comments.push(comment._id);
+    await post.save();
+
+    await Users.findByIdAndUpdate("6762992a111a1def3c125264", { $push: { comments: comment._id } });
+
+    // Replace the problematic populate chain with proper population
+    const populatedPost = await Post.findById(post._id)
+      .populate({
+        path: "author",
+        select: "firstName lastName fullName avatar email verified department",
+      })
+      .populate({
+        path: "comments",
+        options: { sort: { createdAt: -1 } },
+        populate: [
+          {
+            path: "author",
+            select: "firstName lastName fullName avatar email verified department",
+          },
+          createPopulateObject(),
+        ],
+      });
 
     res.status(201).json({
       success: true,
-      data: post,
+      data: populatedPost,
     });
   } catch (error) {
     console.error("Post creation error:", error);
@@ -279,7 +307,7 @@ const addComment = async (req, res) => {
       notificationType: "comment",
       message: `${user.fullName} liked your post "${post.title}"`,
       link: `http://localhost:5173/post/${post._id}`,
-      logoPath: '../../client/public/logo.png' // Path to your logo
+      logoPath: "../../client/public/logo.png", // Path to your logo
     });
 
     res.status(201).json({
