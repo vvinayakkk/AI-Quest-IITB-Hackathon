@@ -208,7 +208,7 @@ const toggleLike = async (req, res) => {
       notificationType: "upvote",
       message: `${user.fullName} liked your post "${post.title}"`,
       link: `http://localhost:5173/post/${post._id}`,
-      logoPath: '../../client/public/logo.png' // Path to your logo
+      // logoPath: '../server/assets/logo.png' // Path to your logo
     });
 
     res.json({

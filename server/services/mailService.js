@@ -3,6 +3,9 @@ import { htmlToText } from 'nodemailer-html-to-text';
 import dotenv from 'dotenv';
 dotenv.config();
 
+console.log(process.env.EMAIL_USER, process.env.APP_PASSWORD);
+
+
 class EmailService {
   constructor() {
     this.transporter = nodemailer.createTransport({
@@ -28,7 +31,7 @@ class EmailService {
       notificationType = 'New',
       message = 'You have a new notification',
       link = '#',
-      logoUrl = '/path/to/default/logo.png'
+    //   logoUrl = '/path/to/default/logo.png'
     } = options;
 
     return `
@@ -144,7 +147,7 @@ class EmailService {
       notificationType,
       message,
       link,
-      logoPath = '/path/to/default/logo.png'
+    //   logoPath = '/path/to/default/logo.png'
     } = options;
 
     try {
@@ -158,14 +161,7 @@ class EmailService {
           notificationType,
           message,
           link
-        }),
-        attachments: [
-          {
-            filename: 'logo.png',
-            path: logoPath,
-            cid: 'logo'
-          }
-        ]
+        })
       });
 
       console.log(`Notification email sent to ${to}`);
