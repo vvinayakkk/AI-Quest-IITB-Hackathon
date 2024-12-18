@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import ReactMarkdown from 'react-markdown'
 import { Card } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -126,7 +127,9 @@ const CommentCard = ({ comment, postId, onVote, onFlag, onDelete, onMarkCorrect,
               </div>
 
               <div className="mb-2 pl-10">
-                <p className="text-gray-100">{parseHashtags(comment.content)}</p>
+                <div className="prose prose-invert prose-sm max-w-none">
+                  <ReactMarkdown>{comment.content}</ReactMarkdown>
+                </div>
               </div>
 
               <div className="flex justify-between text-gray-400 pl-10">
