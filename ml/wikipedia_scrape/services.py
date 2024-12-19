@@ -199,7 +199,7 @@ class GrokPineconeRAG:
         }
 
         grok_headers = {
-            "Authorization": f"Bearer {settings.GROK_API_KEY}",
+            "Authorization": f"Bearer {os.getenv('XAI_API_KEY')}",
             "Content-Type": "application/json"
         }
 

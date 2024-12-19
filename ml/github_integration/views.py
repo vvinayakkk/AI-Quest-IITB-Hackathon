@@ -643,7 +643,7 @@ def chat_single_file(request):
 
         # LLM API headers
         llm_headers = {
-            "Authorization": f"Bearer {os.getenv('GROK_API_KEY')}",
+            "Authorization": f"Bearer {os.getenv('XAI_API_KEY')}",
             "Content-Type": "application/json"
         }
 

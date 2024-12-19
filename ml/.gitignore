@@ -80,7 +80,6 @@ target/
 *.log
 *.pot
 *.pyc
-__pycache__/
 local_settings.py
 
 .env
@@ -88,3 +87,5 @@ local_settings.py
 venv/*
 myenv/*
 db.sqlite3
+
+repo_indices

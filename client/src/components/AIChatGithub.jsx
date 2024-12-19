@@ -17,7 +17,7 @@ const TypewriterEffect = ({ text, onComplete }) => {
       const timeout = setTimeout(() => {
         setDisplayText(prev => prev + text[currentIndex]);
         setCurrentIndex(currentIndex + 1);
-      }, 30);
+      }, 1);
 
       return () => clearTimeout(timeout);
     } else {
