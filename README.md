@@ -1,181 +1,163 @@
-## 🏆 **IITB AI_QUEST HAckathon Winning Project**
+# AI-Quest IITB Backend
 
-# **The Ultimate Q&A Platform for Seamless Employee Collaboration**
+## Overview
+AI-Quest IITB Backend is a modular, production-grade backend for advanced AI-powered research, code analysis, knowledge retrieval, and community features. It powers:
+- Wikipedia-powered chat with multi-article aggregation, citation, and context
+- GitHub repository analysis and code RAG (Retrieval Augmented Generation)
+- Agent-based automation for research, code, and data tasks
+- Full-featured community backend (posts, comments, moderation, notifications, user groups, collections, etc.)
+- Extensible architecture for new AI/ML and community features
 
-In the evolving landscape of organizational efficiency, 🌟 the seamless integration of information flow and employee collaboration remains paramount. Our Q&A platform redefines this paradigm by leveraging internal resources such as 📖 Wikipedia, 🖥️ GitHub repositories, 🗃️ wikis, and 📝 organizational documents, augmented by cutting-edge AI methodologies. This platform is not merely a tool but a transformative ecosystem designed to foster a culture of shared knowledge and operational excellence.
-
----
-
-## **The Core of Integration: Exploiting Internal Tools**
-
-Our platform operates as the nexus of organizational knowledge, seamlessly incorporating a variety of internal resources:
-
-- 📚 **Wikipedia and Wikis:** Providing real-time access to both internal and external knowledge repositories ensures employees are equipped with up-to-date, comprehensive information.
-- 🛠️ **GitHub Repositories:** Integration enables direct referencing of codebases, workflows, and collaborative technical data, streamlining development discussions.
-- 📂 **Document Management Systems:** Facilitating the retrieval and management of mission-critical documentation for context-specific queries.
-
-This synergy ensures the platform transcends conventional knowledge-sharing tools, providing an integrative approach to problem-solving and innovation.
+This backend is built with FastAPI, Transformers, and modern Python best practices.
 
 ---
 
-## **Architectural Framework: Technical Exposition**
+## Key Features
 
-### **Graph RAG (Retrieval-Augmented Generation)**
+### ML & AI Features
+- **Wikipedia Chat**: Ask questions and get answers synthesized from multiple Wikipedia articles, with citations and context for follow-up questions.
+- **GitHub Repository Analysis (RAG)**: Analyze repositories, extract code/documentation, and answer questions about codebases with context-aware retrieval and knowledge graphs.
+- **Agent System**: Modular agents for research, code analysis, document processing, and more. Automate complex research and data tasks.
+- **Extensible ML API**: Easily add new endpoints, agents, or data sources for advanced AI/ML use cases.
 
-Graph RAG is the cornerstone of our platform, enhancing data processing and knowledge dissemination:
-
-- 🔍 **Efficient Data Retrieval:** Extracting relevant data from extensive repositories to curate precise informational snippets.
-- 🌐 **Graph Mapping:** Employing Neo4j to construct a relational knowledge graph, elucidating connections between disparate data points.
-- 🤖 **Contextualized Responses:** Leveraging structured datasets to refine AI-generated answers with unparalleled relevance and accuracy.
-
-### **Neo4j: Pioneering Knowledge Graphs**
-
-Neo4j serves as the backbone for graph-based relational data storage:
-
-- 🗂️ **Dynamic Data Structures:** Mapping queries, responses, tags, and contributors to establish a robust relational framework.
-- 🔗 **Enhanced Discovery:** Enabling advanced querying capabilities through visualized interrelationships.
-- 🕒 **Real-Time Adaptability:** Accommodating the fluid nature of enterprise knowledge.
-
-### **Pinecone: Semantic Vectorization**
-
-Pinecone underpins the platform’s sophisticated semantic search functionalities:
-
-- 🔎 **Vector Embedding:** Translating queries into vector spaces for accurate semantic matching.
-- ⚡ **Accelerated Retrieval:** Optimizing search operations across expansive datasets.
-- 📈 **Adaptive Learning:** Continuously evolving through iterative updates and user interaction.
-
-### **Grok: Parsing for Precision**
-
-Grok facilitates the ingestion of textual and structured data from internal documents:
-
-- 📖 **Content Extraction:** Parsing documents to identify relevant knowledge snippets.
-- 🧠 **AI Model Training:** Enhancing model contextuality through curated datasets.
-- ✅ **Ambiguity Mitigation:** Increasing response precision by refining data inputs.
-
-### **Data Infrastructure**
-
-- 🗄️ **MongoDB:** Providing a scalable and flexible schema for storing user interactions, including questions, responses, and voting data.
-- 🔧 **Backend Systems:** Node.js and Django orchestrate the backend architecture, supporting real-time interactions and machine learning workflows.
+### Community & Content Features
+- **Authentication & User Management**: Secure signup, login, password reset, email verification, and user profile management.
+- **Posts & Comments**: Create, update, delete, search, and interact with posts and comments. Includes voting, bookmarking, reporting, and trending content.
+- **Collections & Bookmarks**: Organize content into collections, manage bookmarks, and collaborate on reading lists.
+- **Content Organization**: Categories, tags, badges, and achievements for rich content classification and gamification.
+- **Moderation & Reporting**: Flag/report content, moderation queues, ban/unban users, and detailed moderation analytics.
+- **User Groups & Teams**: Create and manage user groups, assign roles, and collaborate in teams.
+- **Messaging & Notifications**: Private messaging, notification preferences, and real-time alerts.
+- **Community Guidelines**: Publish, update, and manage community guidelines and policies.
+- **Integration System**: Connect with external services (e.g., GitHub, OAuth providers, webhooks, API keys) and manage integration settings.
+- **Analytics & System Health**: Track system health, logs, metrics, and analytics for monitoring and optimization.
 
 ---
 
-## **Elevating Conventional Features**
-
-### **1. Personalized User Profiles**
-Each user’s profile showcases their contributions, areas of expertise, and engagement levels. 🧑‍💻👩‍💻
-
-### **2. Streamlined Question Categorization**
-Advanced tagging and categorization ensure efficient navigation and thematic discussions. 🏷️
-
-### **3. AI-Driven Responses**
-Fine-tuned models, including 🤖 BERT and 🦙 LLaMA, deliver contextualized responses, distinctly labeled to differentiate from human-generated content.
-
-### **4. Dynamic Voting Mechanism**
-A robust algorithm prioritizes high-quality answers, ensuring that the most useful content is prominently displayed. ⬆️⬇️
-
-### **5. Verified Expert Responses**
-Official answers from domain experts are distinctly marked, lending credibility and clarity. 🏅
-
-### **6. Moderation Protocols**
-A dual-layered approach of automated checks and manual oversight ensures the quality and relevance of shared content. 🚦
-
-### **7. Real-Time Notifications**
-Users receive instant updates about question activity and related topics, ensuring engagement. 🔔
-
-### **8. Comprehensive Analytics**
-A dedicated dashboard offers insights into user engagement, platform trends, and improvement areas. 📊📈
-
----
-
-## **Mermaid Diagrams: Strategic Visualization**
-
-### **1. Platform Workflow Overview**
-```mermaid
-graph TD
-    A[User Posts a Question] --> B[Platform Saves Question in MongoDB]
-    B --> C[Other Users Provide Answers]
-    C --> D{Does AI Suggest a Reply?}
-    D -->|Yes| E[AI Suggests Potential Replies]
-    D -->|No| F[Move to Expert Review]
-    F --> G[Expert Provides Verified Answer]
-    G --> H[Answers Voted and Ranked]
-    H --> I[Top Answer Displayed to User]
+## Architecture
 ```
-
-### **2. Internal Tool Integration**
-```mermaid
-graph LR
-    subgraph Tools
-        A[GitHub] -->|Code References| B[Internal Wikis]
-        B -->|Knowledge Resources| C[Documentation Repositories]
-        C -->|Searchable Content| D[Graph Database - Neo4j]
-    end
-    subgraph AI_Process
-        E[User Query] -->|Vectorized| F[Pinecone]
-        F -->|Matches Semantic Context| G[Graph RAG]
-        G -->|Generates Contextual Answer| H[Response to User]
-    end
-    Tools --> AI_Process
-```
-
-### **3. AI Response Lifecycle**
-```mermaid
-graph TD
-    A[User Query] --> B[Text Parsing by Grok]
-    B --> C{Is Context Found?}
-    C -->|Yes| D[Search Internal Tools]
-    D --> E{Response Type}
-    E -->|AI Response| F[Fine-Tuned Model Prediction]
-    E -->|Official Answer| G[Expert Verification]
-    F --> H[Response Displayed to User]
-    G --> H
-    C -->|No| I[Request Clarification from User]
-```
-
-### **4. Moderation Workflow**
-```mermaid
-graph TD
-    A[Content Submission] --> B[Automated Checks for Spam]
-    B --> C{Is Content Appropriate?}
-    C -->|Yes| D[Content Displayed]
-    C -->|No| E[Flag for Moderator Review]
-    E --> F{Moderator Action}
-    F -->|Approve| D
-    F -->|Reject| G[Content Removed]
-```
-
-### **5. Analytics Dashboard Architecture**
-```mermaid
-graph TD
-    A[Platform Usage Data] --> B[Data Preprocessing]
-    B --> C[Trends and Engagement Analysis]
-    C --> D{Insights Generated}
-    D -->|User Patterns| E[Heatmap Visualization]
-    D -->|Content Trends| F[Topic Analysis]
-    D -->|AI Effectiveness| G[Model Performance Dashboard]
-    G --> H[Iterative Model Improvement]
-    E --> H
-    F --> H
+ml/
+├── api/         # FastAPI route handlers (chat, github, agents, etc.)
+├── agents/      # Agent classes and managers
+├── config/      # Configuration and logging
+├── core/        # Core logic (rag, github, etc.)
+├── database/    # DB connection and models
+├── graph/       # Knowledge graph, Wikipedia RAG, GitHub RAG
+├── models/      # ORM/database models
+├── schemas/     # Pydantic models for API
+├── scripts/     # Run/test/utility scripts
+├── services/    # Business logic/services
+├── tests/       # Pytest-based tests
+├── utils/       # Utility functions
+├── app.py       # FastAPI app entry point
+├── requirements.txt
+├── README.md
+└── .env.example
+server/
+├── routes/      # Express route handlers (auth, user, post, content, etc.)
+├── controllers/ # Business logic/controllers
+├── models/      # Mongoose models
+├── middleware/  # Express middleware
+├── ...
 ```
 
 ---
 
-## **Unparalleled Value Proposition**
-
-### **1. Integrated Knowledge Ecosystem**
-A harmonized repository bridging institutional expertise and modern tools. 🌉
-
-### **2. AI-Augmented Efficiency**
-State-of-the-art 🤖 BERT and 🦙 LLaMA models enable accurate, context-driven knowledge dissemination.
-
-### **3. User-Centric Design**
-Features designed to enhance accessibility, engagement, and satisfaction. 💡
-
-### **4. Quality Assurance**
-A rigorous moderation system ensures the highest standards of content accuracy and appropriateness. ✅🛡️
+## Setup & Installation
+1. **Clone the repo**
+   ```bash
+   git clone <repo-url>
+   cd AI-Quest-IITB-Hackathon
+   ```
+2. **Create a virtual environment**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # Linux/Mac
+   venv\Scripts\activate     # Windows
+   ```
+3. **Install dependencies**
+   ```bash
+   pip install -r ml/requirements.txt
+   ```
+4. **Configure environment**
+   ```bash
+   cp ml/.env.example ml/.env
+   # Edit ml/.env as needed
+   ```
+5. **Run the ML backend**
+   ```bash
+   cd ml
+   python scripts/run.py
+   # or
+   uvicorn app:app --reload
+   ```
+6. **Run the Node.js server**
+   ```bash
+   cd server
+   npm install
+   npm start
+   ```
 
 ---
 
-## **Conclusion**
-Our Q&A platform epitomizes innovation and collaborative potential. By amalgamating advanced AI, robust tool integrations, and user-focused functionalities, this system transcends traditional knowledge-sharing paradigms, fostering a collaborative and growth-oriented organizational culture. Join us in redefining workplace collaboration. 🌟✨🚀
+## Usage Examples
+- **Wikipedia Chat**: Ask questions and get cited, multi-article answers.
+- **GitHub RAG**: Analyze any public repo for code, docs, and structure.
+- **Agent Automation**: Automate research, code, and data tasks with modular agents.
+- **Community Platform**: Build, moderate, and grow a knowledge-sharing community with rich content, moderation, and collaboration features.
+
+---
+
+## Development Workflow
+- **Run ML tests:**
+  ```bash
+  cd ml
+  python scripts/run_tests.py
+  ```
+- **Lint ML code:**
+  ```bash
+  cd ml
+  flake8
+  ```
+- **Format ML code:**
+  ```bash
+  cd ml
+  black .
+  ```
+- **Run Node.js server tests:**
+  ```bash
+  cd server
+  npm test
+  ```
+- **Add new features:**
+  - Add new endpoints in `ml/api/` or `server/routes/`
+  - Add new agents in `ml/agents/`
+  - Add new RAG/data logic in `ml/graph/`
+  - Add new community features in `server/`
+
+---
+
+## Contributing
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+---
+
+## FAQ
+**Q: How does the Wikipedia chat maintain context?**
+A: Each query and its results are stored in a context cache, so follow-up questions can reference previous answers.
+
+**Q: Can I add new data sources, agents, or community features?**
+A: Yes! The architecture is modular. Add new agents in `ml/agents/`, new RAG modules in `ml/graph/`, new endpoints in `ml/api/` or `server/routes/`, and new features in `server/`.
+
+**Q: Is this production-ready?**
+A: Yes, with logging, config, and test structure. For full production, add HTTPS, authentication, and monitoring as needed.
+
+---
+
+## License
+MIT License. See `LICENSE` file.
 

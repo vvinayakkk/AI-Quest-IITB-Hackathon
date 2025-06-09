@@ -26,8 +26,7 @@ Temporary Items
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
-
-# C extensions
+*$py.class
 *.so
 
 # Distribution / packaging
@@ -38,11 +37,13 @@ develop-eggs/
 dist/
 downloads/
 eggs/
+.eggs/
 lib/
 lib64/
 parts/
 sdist/
 var/
+wheels/
 *.egg-info/
 .installed.cfg
 *.egg
@@ -83,9 +84,42 @@ target/
 local_settings.py
 
 .env
-.venv/*
-venv/*
-myenv/*
-db.sqlite3
+.venv
+env/
+venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+
+# Cache
+cache/
+__pycache__/
+
+# Database
+*.db
+*.sqlite3
+
+# Test coverage
+.coverage
+htmlcov/
+
+# Model files
+models/
+*.pkl
+*.h5
+*.pt
+*.pth
+
+# Temporary files
+*.tmp
+*.temp
 
 repo_indices
