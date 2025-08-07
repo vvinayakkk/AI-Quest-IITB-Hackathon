@@ -1,12 +1,14 @@
-# AI-Quest IITB Backend
+# AI-Quest IITB Hackathon Project
 
 ## Overview
-AI-Quest IITB Backend is a modular, production-grade backend for advanced AI-powered research, code analysis, knowledge retrieval, and community features. It powers:
+AI-Quest IITB is a modular, production-grade repository for advanced AI-powered research, code analysis, knowledge retrieval, and community features. It powers:
 - Wikipedia-powered chat with multi-article aggregation, citation, and context
 - GitHub repository analysis and code RAG (Retrieval Augmented Generation)
 - Agent-based automation for research, code, and data tasks
 - Full-featured community backend (posts, comments, moderation, notifications, user groups, collections, etc.)
 - Extensible architecture for new AI/ML and community features
+
+<img width="1024" height="1024" alt="image" src="https://github.com/user-attachments/assets/5c9803d2-d2be-428f-95b1-41ecf9bfce8e" />
 
 This backend is built with FastAPI, Transformers, and modern Python best practices.
 
